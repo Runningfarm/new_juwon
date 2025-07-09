@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFDF6"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- 종료 버튼 -->
+    <ImageButton
+        android:id="@+id/exitButton"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="#FFFFFF"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:scaleType="fitCenter"
+        app:tint="#333333"
+        android:contentDescription="종료 버튼"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 우측 상단 편지함 -->
+    <ImageButton
+        android:id="@+id/mailButton"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:backgroundTint="#FFFFFF"
+        android:src="@android:drawable/ic_dialog_email"
+        app:tint="#333333"
+        android:contentDescription="편지함 열기"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="10dp" />
+
+    <!-- 중앙 농장 영역 -->
+    <FrameLayout
+        android:id="@+id/farmArea"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#FFFAF0"
+        android:elevation="2dp"
+        android:clipToOutline="true"
+        app:layout_constraintTop_toBottomOf="@id/exitButton"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5">
+
+        <!-- 캐릭터 버튼 -->
+        <ImageButton
+            android:id="@+id/characterButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@null"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_character"
+            android:contentDescription="캐릭터 이미지" />
+
+
+        <!-- 캐릭터 메뉴 -->
+        <LinearLayout
+            android:id="@+id/characterMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="12dp"
+            android:background="#FFF9E6"
+            android:padding="10dp"
+            android:elevation="6dp"
+            android:layout_marginTop="8dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical">
+
+            <!-- 레벨 표시 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginEnd="12dp">
+
+                <ProgressBar
+                    android:id="@+id/levelProgressBar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="120dp"
+                    android:layout_height="12dp"
+                    android:progress="40"
+                    android:max="100"
+                    android:progressTint="#FFB74D"
+                    android:backgroundTint="#FFE0B2"
+                    android:layout_marginEnd="8dp"
+                    android:indeterminate="false" />
+
+                <TextView
+                    android:id="@+id/levelText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LV 7"
+                    android:textSize="14sp"
+                    android:textColor="#6D4C41"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 먹이 개수 -->
+            <TextView
+                android:id="@+id/foodCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="먹이: 3"
+                android:textSize="14sp"
+                android:textColor="#4CAF50"
+                android:gravity="center_vertical"
+                android:layout_marginEnd="12dp"
+                android:textStyle="bold" />
+
+            <!-- 먹이주기 버튼 -->
+            <Button
+                android:id="@+id/feedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="먹이주기"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:backgroundTint="#FF9800"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/editButtonsLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <Button
+                android:id="@+id/editModeButton"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:text="수정하기"
+                android:textSize="9sp"
+                android:padding="4dp"
+                android:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/editCompleteButton"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:text="수정완료"
+                android:textSize="9sp"
+                android:padding="4dp"
+                android:backgroundTint="#607D8B"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/resetButton"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:text="초기화"
+                android:textSize="9sp"
+                android:padding="4dp"
+                android:backgroundTint="#F44336"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 하단 바 -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:background="#F5F5F5"
+        android:paddingTop="6dp"
+        android:elevation="8dp"
+        android:gravity="center"
+        android:weightSum="6"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/tab1Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_home"
+            android:background="@null"
+            android:contentDescription="탭 1" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab2Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_running"
+            android:background="@null"
+            android:contentDescription="탭 2" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab3Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:contentDescription="탭 3"
+            android:src="@drawable/ic_quest" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab4Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_inventory"
+            android:background="@null"
+            android:contentDescription="탭 4" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab6Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_mypage"
+            android:background="@null"
+            android:contentDescription="탭 6" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
