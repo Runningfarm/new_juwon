@@ -5,6 +5,7 @@ public class LoginResponse {
     private String message;
     private String token;
     private float weight;
+    private String name;
 
     public boolean isSuccess() {
         return success;
@@ -18,5 +19,11 @@ public class LoginResponse {
         return token;
     }
 
-    public float getWeight() { return weight; }
+    public float getWeight() {
+        return weight;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

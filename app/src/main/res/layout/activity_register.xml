@@ -6,7 +6,7 @@
     android:gravity="center_horizontal"
     android:padding="12dp"
     android:background="#FFFFFF">
-    <!-- 뒤로가기 버튼 -->
+
     <ImageButton
         android:id="@+id/backButtonRegister"
         android:layout_width="60dp"
@@ -18,7 +18,7 @@
         android:padding="8dp"
         android:layout_marginBottom="24dp"
         android:scaleType="fitCenter" />
-    <!-- 타이틀 -->
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -27,38 +27,55 @@
         android:textStyle="bold"
         android:textColor="#222222"
         android:layout_marginBottom="36dp" />
-    <!-- 아이디 입력 -->
+
+    <EditText
+        android:id="@+id/editTextRegisterName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="이름"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"
+        android:background="@android:drawable/edit_text"
+        android:textColor="#222222"
+        android:textSize="16sp" />
+
     <EditText
         android:id="@+id/editTextRegisterId"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="아이디(이메일)"
+        android:hint="아이디"
         android:inputType="textEmailAddress"
         android:layout_marginBottom="16dp"
         android:padding="12dp"
         android:background="@android:drawable/edit_text"
         android:textColor="#222222"
         android:textSize="16sp" />
-    <!-- 비밀번호 입력 -->
+
     <EditText
         android:id="@+id/editTextRegisterPassword"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="비밀번호"
         android:inputType="textPassword"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="16dp"
         android:padding="12dp"
         android:background="@android:drawable/edit_text"
         android:textColor="#222222"
         android:textSize="16sp" />
-    <!-- 몸무게 입력 -->
+
     <EditText
         android:id="@+id/editTextRegisterWeight"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:hint="체중 (kg)"
-        android:inputType="numberDecimal" />
-    <!-- 회원가입 버튼 -->
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"
+        android:background="@android:drawable/edit_text"
+        android:textColor="#222222"
+        android:textSize="16sp" />
+
     <Button
         android:id="@+id/buttonRegister"
         android:layout_width="match_parent"
@@ -68,4 +85,16 @@
         android:backgroundTint="#43A047"
         android:textColor="#FFFFFF"
         android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/textGoToLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="이미 회원가입 하셨습니까? 로그인하기"
+        android:textColor="#AAAAAA"
+        android:textSize="13sp"
+        android:layout_marginTop="12dp"
+        android:textStyle="italic"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true" />
 </LinearLayout>

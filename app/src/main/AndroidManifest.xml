@@ -2,13 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 권한 설정 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -22,11 +21,12 @@
         tools:targetApi="31"
         android:networkSecurityConfig="@xml/network_security_config">
 
-        <!-- Google Maps API Key (반드시 본인 키로 교체!) -->
+        <!-- Google Maps API Key (교체 필요 시 주의) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBasTEL3wovPwvZYuH6jDUDCQe1O3EvV8c"/>
+            android:value="AIzaSyBasTEL3wovPwvZYuH6jDUDCQe1O3EvV8c" />
 
+        <!-- 시작 액티비티 -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -36,14 +36,17 @@
             </intent-filter>
         </activity>
 
+        <!-- 앱 내 주요 액티비티들 -->
         <activity android:name=".Tab2Activity" android:exported="true" />
         <activity android:name=".Tab3Activity" android:exported="true" />
         <activity android:name=".Tab4Activity" android:exported="true" />
         <activity android:name=".Tab6Activity" android:exported="true" />
-        <activity android:name=".RunningResult" android:exported="true" />
         <activity android:name=".RegisterActivity" android:exported="true" />
+        <activity android:name=".RunningResult" android:exported="true" />
 
+        <!-- 누락되었던 액티비티 추가 -->
+        <activity android:name=".MypageActivity" android:exported="true" />
+        <activity android:name=".EditProfileActivity" android:exported="true" />
 
     </application>
-
 </manifest>

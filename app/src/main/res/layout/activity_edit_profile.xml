@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!--  뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="60dp"
+            android:layout_height="55dp"
+            android:src="@drawable/ic_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="뒤로가기"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:layout_marginBottom="25dp"/>
+
+        <EditText
+            android:id="@+id/editName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="이름"
+            android:layout_marginTop="15dp"/>
+
+        <EditText
+            android:id="@+id/editEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="아이디(변경불가)"
+            android:enabled="false"
+            android:layout_marginTop="15dp"/>
+
+        <EditText
+            android:id="@+id/editWeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="몸무게 (kg)"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="15dp"/>
+
+        <EditText
+            android:id="@+id/editPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="새 비밀번호"
+            android:inputType="textPassword"
+            android:layout_marginTop="15dp"/>
+
+        <Button
+            android:id="@+id/buttonUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="수정 완료"
+            android:layout_marginTop="30dp" />
+    </LinearLayout>
+</ScrollView>

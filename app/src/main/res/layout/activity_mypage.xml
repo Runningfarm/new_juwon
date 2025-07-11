@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="20dp">
+
+    <!-- ✅ 콘텐츠 영역: 위쪽에 버튼/텍스트 배치 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- 상단 환영 메시지 박스 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#EEEEEE"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp"
+            android:elevation="2dp"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="#EEEEEE"
+            android:clipToPadding="false">
+
+            <!-- 텍스트 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="환영합니다!"
+                    android:textSize="16sp"
+                    android:textColor="#333333" />
+
+                <TextView
+                    android:id="@+id/textName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="○○○님"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#222222"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <!-- 프로필 기본 이미지 (drawable 없이) -->
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="16dp"
+                android:background="@android:color/darker_gray"
+                android:scaleType="centerInside"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:layout_gravity="center"
+                android:padding="8dp"
+                android:contentDescription="프로필 이미지" />
+        </LinearLayout>
+
+        <!-- 버튼들 -->
+        <Button
+            android:id="@+id/buttonEditProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="프로필 수정"
+            android:backgroundTint="#6200EE"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/buttonLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="로그아웃"
+            android:backgroundTint="#757575"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/buttonWithdraw"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="탈퇴하기"
+            android:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/buttonExitApp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="앱 종료하기"
+            android:backgroundTint="#BDBDBD"
+            android:textColor="#000000" />
+    </LinearLayout>
+
+    <!-- ✅ 하단 탭바: 아래 고정 -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:background="#EDEDED"
+        android:gravity="center"
+        android:weightSum="6">
+
+        <ImageButton
+            android:id="@+id/tab1Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_home"
+            android:background="@null"
+            android:contentDescription="탭 1" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab2Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_running"
+            android:background="@null"
+            android:contentDescription="탭 2" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab3Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_quest"
+            android:background="@null"
+            android:contentDescription="탭 3" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab4Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_inventory"
+            android:background="@null"
+            android:contentDescription="탭 4" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab6Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_mypage"
+            android:background="@null"
+            android:contentDescription="탭 6" />
+    </LinearLayout>
+
+</LinearLayout>

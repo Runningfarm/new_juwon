@@ -1,15 +1,15 @@
 package kr.ac.hs.farm;
 
-public class RegisterRequest {
+public class EditProfileRequest {
     private String id;
+    private String name;
     private String password;
     private float weight;
-    private String name;
 
-    public RegisterRequest(String id, String password, float weight, String name) {
+    public EditProfileRequest(String id, String name, String password, float weight) {
         this.id = id;
+        this.name = name;
         this.password = password;
         this.weight = weight;
-        this.name = name;
     }
 }
