@@ -25,7 +25,7 @@ selection_border.xml
 SelectableItemView.java
 ```
 
->>> selection_border.xml은 new_juwon/app/src/main/res/drawable/ 들어가시면 있습니다.
+-> selection_border.xml은 new_juwon/app/src/main/res/drawable/ 들어가시면 있습니다.
 
 안드로이드 스튜디오에서 은수님께서 작업하신 부분과 딱히 겹치는 수정된 부분은 없는 것 같아요.
 그래서 각자 가지고 있는 Farm 프로젝트 파일에 위 코드들을 복사 붙여넣기해도 무방할 것 같습니다.
