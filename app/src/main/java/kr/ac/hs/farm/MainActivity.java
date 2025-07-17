@@ -27,12 +27,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_EXPERIENCE = "experience";
     private static final String KEY_ITEMS = "appliedItems";
 
-    private ImageButton mailButton;
     private ImageButton characterButton;
     private LinearLayout characterMenu;
     private Button feedButton;
     private ImageButton exitButton;
-
     private ProgressBar levelProgressBar;
     private TextView levelText;
     private TextView foodCountText;
@@ -43,13 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private int foodCount = 3;
     private int level = 1;
     private int experience = 0;
-
     private final int MAX_EXPERIENCE = 100;
 
     private FrameLayout farmArea;
     private SharedPreferences prefs;
-
-    // 새로 추가된 초기화 버튼
     private Button resetButton;
 
     @Override
@@ -57,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mailButton = findViewById(R.id.mailButton);
         characterButton = findViewById(R.id.characterButton);
         characterMenu = findViewById(R.id.characterMenu);
         feedButton = findViewById(R.id.feedButton);
@@ -66,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         levelText = findViewById(R.id.levelText);
         foodCountText = findViewById(R.id.foodCountText);
         farmArea = findViewById(R.id.farmArea);
+        resetButton = findViewById(R.id.resetButton);
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         loadData();
@@ -73,23 +68,25 @@ public class MainActivity extends AppCompatActivity {
         characterButton.setVisibility(View.GONE);
 
         SpriteView spriteView = new SpriteView(this);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(400, 400);
-        params.gravity = Gravity.CENTER;
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
         spriteView.setLayoutParams(params);
-        farmArea.addView(spriteView);
+        farmArea.addView(spriteView, 0);
 
-        spriteView.setOnClickListener(v -> toggleCharacterMenu());
+        // 캐릭터 클릭 시 메뉴 열기 기능 추가
+        spriteView.setOnSpriteClickListener(() -> toggleCharacterMenu());
+
         characterButton.setOnClickListener(view -> toggleCharacterMenu());
-
         feedButton.setOnClickListener(view -> giveFood());
+        exitButton.setOnClickListener(view -> showExitDialog());
 
         findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, MainActivity.class)));
         findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab2Activity.class)));
         findViewById(R.id.tab3Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab3Activity.class)));
         findViewById(R.id.tab4Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab4Activity.class)));
         findViewById(R.id.tab6Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab6Activity.class)));
-
-        exitButton.setOnClickListener(view -> showExitDialog());
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("reward")) {
@@ -100,14 +97,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateUI();
-
         restoreAppliedItems();
-
         applyInventoryItem(intent);
 
-        // 수정 완료 버튼 리스너
-        Button editCompleteButton = findViewById(R.id.editCompleteButton);
-        editCompleteButton.setOnClickListener(v -> {
+        findViewById(R.id.editCompleteButton).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("수정 완료")
                     .setMessage("수정이 완료되었습니까?")
@@ -119,28 +112,22 @@ public class MainActivity extends AppCompatActivity {
                     .show();
         });
 
-        // 수정 모드 버튼 리스너
-        Button editModeButton = findViewById(R.id.editModeButton);
-        editModeButton.setOnClickListener(v -> {
+        findViewById(R.id.editModeButton).setOnClickListener(v -> {
             setEditMode(true);
             Toast.makeText(MainActivity.this, "수정 모드로 전환되었습니다.", Toast.LENGTH_SHORT).show();
         });
 
-        // 초기화 버튼 뷰 바인딩 및 리스너
-        resetButton = findViewById(R.id.resetButton);
         resetButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("초기화")
                     .setMessage("현재 진행된 인테리어를 모두 초기화하시겠습니까?")
                     .setPositiveButton("네", (dialog, which) -> {
-                        // farmArea의 SelectableItemView 모두 제거
                         for (int i = farmArea.getChildCount() - 1; i >= 0; i--) {
                             View child = farmArea.getChildAt(i);
                             if (child instanceof SelectableItemView) {
                                 farmArea.removeViewAt(i);
                             }
                         }
-                        // 저장된 아이템 정보 초기화
                         prefs.edit().putString(KEY_ITEMS, "[]").apply();
                         Toast.makeText(this, "인테리어가 모두 초기화되었습니다.", Toast.LENGTH_SHORT).show();
                     })
@@ -166,40 +153,62 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void applyInventoryItem(Intent intent) {
-        if (intent != null && intent.hasExtra("appliedItemImageRes")) {
-            int resId = intent.getIntExtra("appliedItemImageRes", 0);
-            if (resId != 0) {
-                addItemToFarmArea(resId, 300f, 100f, 200, 200, 0f);
-                saveAppliedItems();
-                setEditMode(true);
+    private void toggleCharacterMenu() {
+        isMenuVisible = !isMenuVisible;
+        characterMenu.setVisibility(isMenuVisible ? View.VISIBLE : View.GONE);
+    }
+
+    private void giveFood() {
+        if (foodCount > 0) {
+            foodCount--;
+            experience += 20;
+            Toast.makeText(this, "냥이에게 먹이를 줬어요! 남은 먹이: " + foodCount, Toast.LENGTH_SHORT).show();
+            if (experience >= MAX_EXPERIENCE) {
+                level++;
+                experience -= MAX_EXPERIENCE;
+                Toast.makeText(this, "레벨업! 현재 레벨: " + level, Toast.LENGTH_SHORT).show();
             }
-        }
-    }
-
-    private void addItemToFarmArea(int resId, float x, float y, int width, int height, float rotation) {
-        SelectableItemView itemView = new SelectableItemView(this, resId);
-
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-        itemView.setLayoutParams(params);
-        itemView.setX(x);
-        itemView.setY(y);
-        itemView.setRotation(rotation);
-
-        itemView.setOnDoubleTapListener(() -> showDeleteConfirmDialog(itemView));
-
-        itemView.setEditEnabled(isEditMode);
-        if (isEditMode) {
-            itemView.showBorderAndButtons();
+            updateUI();
+            saveData();
         } else {
-            itemView.hideBorderAndButtons();
+            Toast.makeText(this, "먹이가 부족합니다! 더 구입해 주세요.", Toast.LENGTH_SHORT).show();
         }
-
-        farmArea.addView(itemView);
     }
 
-    private void addItemToFarmArea(int resId, float x, float y) {
-        addItemToFarmArea(resId, x, y, 200, 200, 0f);
+    private void updateUI() {
+        levelText.setText("LV " + level);
+        levelProgressBar.setMax(MAX_EXPERIENCE);
+        levelProgressBar.setProgress(experience);
+        foodCountText.setText("먹이: " + foodCount);
+        feedButton.setEnabled(foodCount > 0);
+        feedButton.setAlpha(foodCount > 0 ? 1.0f : 0.5f);
+    }
+
+    private void saveData() {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(KEY_FOOD_COUNT, foodCount);
+        editor.putInt(KEY_LEVEL, level);
+        editor.putInt(KEY_EXPERIENCE, experience);
+        saveAppliedItems();
+        editor.apply();
+    }
+
+    private void loadData() {
+        foodCount = prefs.getInt(KEY_FOOD_COUNT, 3);
+        level = prefs.getInt(KEY_LEVEL, 1);
+        experience = prefs.getInt(KEY_EXPERIENCE, 0);
+    }
+
+    private void showExitDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("앱 종료")
+                .setMessage("정말 종료하시겠습니까?")
+                .setPositiveButton("종료", (dialog, which) -> {
+                    saveData();
+                    finishAffinity();
+                })
+                .setNegativeButton("취소", null)
+                .show();
     }
 
     private void restoreAppliedItems() {
@@ -219,6 +228,31 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void applyInventoryItem(Intent intent) {
+        if (intent != null && intent.hasExtra("appliedItemImageRes")) {
+            int resId = intent.getIntExtra("appliedItemImageRes", 0);
+            if (resId != 0) {
+                addItemToFarmArea(resId, 300f, 100f, 200, 200, 0f);
+                saveAppliedItems();
+                setEditMode(true);
+            }
+        }
+    }
+
+    private void addItemToFarmArea(int resId, float x, float y, int width, int height, float rotation) {
+        SelectableItemView itemView = new SelectableItemView(this, resId);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+        itemView.setLayoutParams(params);
+        itemView.setX(x);
+        itemView.setY(y);
+        itemView.setRotation(rotation);
+        itemView.setOnDoubleTapListener(() -> showDeleteConfirmDialog(itemView));
+        itemView.setEditEnabled(isEditMode);
+        if (isEditMode) itemView.showBorderAndButtons();
+        else itemView.hideBorderAndButtons();
+        farmArea.addView(itemView);
     }
 
     private void saveAppliedItems() {
@@ -262,73 +296,5 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("아니오", null)
                 .show();
-    }
-
-    private void toggleCharacterMenu() {
-        isMenuVisible = !isMenuVisible;
-        characterMenu.setVisibility(isMenuVisible ? View.VISIBLE : View.GONE);
-    }
-
-    private void giveFood() {
-        if (foodCount > 0) {
-            foodCount--;
-            experience += 20;
-            Toast.makeText(this, "냥이에게 먹이를 줬어요! 남은 먹이: " + foodCount, Toast.LENGTH_SHORT).show();
-
-            if (experience >= MAX_EXPERIENCE) {
-                levelUp();
-            }
-
-            updateUI();
-            saveData();
-        } else {
-            Toast.makeText(this, "먹이가 부족합니다! 더 구입해 주세요.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void levelUp() {
-        level++;
-        experience -= MAX_EXPERIENCE;
-        Toast.makeText(this, "레벨업! 현재 레벨: " + level, Toast.LENGTH_SHORT).show();
-    }
-
-    private void updateUI() {
-        levelText.setText("LV " + level);
-        levelProgressBar.setMax(MAX_EXPERIENCE);
-        levelProgressBar.setProgress(experience);
-
-        if (foodCountText != null) {
-            foodCountText.setText("먹이: " + foodCount);
-        }
-
-        feedButton.setEnabled(foodCount > 0);
-        feedButton.setAlpha(foodCount > 0 ? 1.0f : 0.5f);
-    }
-
-    private void showExitDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("앱 종료")
-                .setMessage("정말 종료하시겠습니까?")
-                .setPositiveButton("종료", (dialog, which) -> {
-                    saveData();
-                    finishAffinity();
-                })
-                .setNegativeButton("취소", null)
-                .show();
-    }
-
-    private void saveData() {
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(KEY_FOOD_COUNT, foodCount);
-        editor.putInt(KEY_LEVEL, level);
-        editor.putInt(KEY_EXPERIENCE, experience);
-        saveAppliedItems();
-        editor.apply();
-    }
-
-    private void loadData() {
-        foodCount = prefs.getInt(KEY_FOOD_COUNT, 3);
-        level = prefs.getInt(KEY_LEVEL, 1);
-        experience = prefs.getInt(KEY_EXPERIENCE, 0);
     }
 }

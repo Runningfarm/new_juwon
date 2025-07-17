@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -19,11 +20,30 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     private long lastFrameTime;
     private int frameDuration = 120;
 
+    private float currentX = 100, currentY = 100;
+    private float targetX = 100, targetY = 100;
+    private float speed = 5f;
+    private float stopThreshold = 3f;
+
+    private boolean isMoving = false;
+
     private SurfaceHolder holder;
     private DrawThread thread;
 
+    // 콜백 인터페이스 정의
+    public interface OnSpriteClickListener {
+        void onSpriteClick();
+    }
+
+    private OnSpriteClickListener onSpriteClickListener;
+
+    public void setOnSpriteClickListener(OnSpriteClickListener listener) {
+        this.onSpriteClickListener = listener;
+    }
+
     public SpriteView(Context context) {
         super(context);
+        setFocusable(true);
         holder = getHolder();
         holder.addCallback(this);
 
@@ -34,8 +54,13 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
         srcRect = new Rect(0, 0, frameWidth, frameHeight);
 
-        int size = frameWidth * 4;
-        dstRect = new Rect(0, 0, size, size);
+        int size = frameWidth * 2;
+        dstRect = new Rect(
+                (int)(currentX - size / 2f),
+                (int)(currentY - size / 2f),
+                (int)(currentX + size / 2f),
+                (int)(currentY + size / 2f)
+        );
     }
 
     @Override
@@ -85,19 +110,51 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
                 }
 
                 try {
-                    sleep(16);
+                    sleep(16); // 약 60fps
                 } catch (InterruptedException e) {}
             }
         }
     }
 
     private void drawFrame(Canvas canvas) {
-        canvas.drawColor(0xFFFFFAF0); // 배경
+        canvas.drawColor(0xFFFFFAF0); // 배경색
 
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastFrameTime > frameDuration) {
-            frameIndex = (frameIndex + 1) % frameCount;
-            lastFrameTime = currentTime;
+        float dx = targetX - currentX;
+        float dy = targetY - currentY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > stopThreshold) {
+            isMoving = true;
+
+            // 방향에 따른 애니메이션 줄 선택
+            if (Math.abs(dx) > Math.abs(dy)) {
+                frameRow = dx > 0 ? 3 : 2; // 오른쪽(3), 왼쪽(2)
+            } else {
+                frameRow = dy > 0 ? 0 : 1; // 아래(0), 위(1)
+            }
+
+            float stepX = speed * dx / distance;
+            float stepY = speed * dy / distance;
+            currentX += stepX;
+            currentY += stepY;
+
+            // 화면 경계 제한
+            int viewWidth = getWidth();
+            int viewHeight = getHeight();
+            int halfSize = (frameWidth * 2) / 2;
+            currentX = Math.max(halfSize, Math.min(viewWidth - halfSize, currentX));
+            currentY = Math.max(halfSize, Math.min(viewHeight - halfSize, currentY));
+
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastFrameTime > frameDuration) {
+                frameIndex = (frameIndex + 1) % frameCount;
+                lastFrameTime = currentTime;
+            }
+        } else {
+            isMoving = false;
+            currentX = targetX;
+            currentY = targetY;
+            frameIndex = 0; // 정지 시 첫 프레임 유지
         }
 
         srcRect.left = frameIndex * frameWidth;
@@ -105,20 +162,34 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         srcRect.right = srcRect.left + frameWidth;
         srcRect.bottom = srcRect.top + frameHeight;
 
-        // 중앙 좌표 계산
-        int canvasWidth = canvas.getWidth();
-        int canvasHeight = canvas.getHeight();
-
-        int size = (int)(frameWidth * 2); // 크기를 2배로 축소 (필요시 1.5, 1.2 등 조정 가능)
-
-        int left = (canvasWidth - size) / 2;
-        int top = (canvasHeight - size) / 2;
-
-        dstRect.left = left;
-        dstRect.top = top;
-        dstRect.right = left + size;
-        dstRect.bottom = top + size;
+        int size = frameWidth * 2;
+        dstRect.left = (int) (currentX - size / 2f);
+        dstRect.top = (int) (currentY - size / 2f);
+        dstRect.right = dstRect.left + size;
+        dstRect.bottom = dstRect.top + size;
 
         canvas.drawBitmap(spriteSheet, srcRect, dstRect, null);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float touchX = event.getX();
+        float touchY = event.getY();
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            // 캐릭터 클릭 시 메뉴 열기
+            if (dstRect.contains((int) touchX, (int) touchY)) {
+                if (onSpriteClickListener != null) {
+                    onSpriteClickListener.onSpriteClick();
+                    return true;
+                }
+            }
+
+            // 터치 이동
+            targetX = touchX;
+            targetY = touchY;
+            return true;
+        }
+        return super.onTouchEvent(event);
     }
 }

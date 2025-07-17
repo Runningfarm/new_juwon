@@ -9,7 +9,6 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <!-- 종료 버튼 -->
     <ImageButton
         android:id="@+id/exitButton"
         android:layout_width="60dp"
@@ -23,7 +22,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 우측 상단 편지함 -->
     <ImageButton
         android:id="@+id/mailButton"
         android:layout_width="42dp"
@@ -36,23 +34,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="10dp" />
 
-    <!-- 중앙 농장 영역 -->
     <FrameLayout
         android:id="@+id/farmArea"
         android:layout_width="0dp"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_height="0dp"
         android:background="#FFFAF0"
         android:elevation="2dp"
         android:clipToOutline="true"
         app:layout_constraintTop_toBottomOf="@id/exitButton"
         app:layout_constraintBottom_toTopOf="@id/bottomBar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.5">
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- 캐릭터 버튼 -->
         <ImageButton
             android:id="@+id/characterButton"
             android:layout_width="match_parent"
@@ -63,8 +56,6 @@
             android:src="@drawable/ic_character"
             android:contentDescription="캐릭터 이미지" />
 
-
-        <!-- 캐릭터 메뉴 -->
         <LinearLayout
             android:id="@+id/characterMenu"
             android:layout_width="wrap_content"
@@ -76,11 +67,9 @@
             android:background="#FFF9E6"
             android:padding="10dp"
             android:elevation="6dp"
-            android:layout_marginTop="8dp"
             android:clipToPadding="false"
             android:gravity="center_vertical">
 
-            <!-- 레벨 표시 -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
@@ -110,7 +99,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- 먹이 개수 -->
             <TextView
                 android:id="@+id/foodCountText"
                 android:layout_width="wrap_content"
@@ -122,7 +110,6 @@
                 android:layout_marginEnd="12dp"
                 android:textStyle="bold" />
 
-            <!-- 먹이주기 버튼 -->
             <Button
                 android:id="@+id/feedButton"
                 android:layout_width="wrap_content"
@@ -142,9 +129,7 @@
             android:orientation="horizontal"
             android:layout_gravity="top|end"
             android:layout_margin="8dp"
-            android:gravity="center_vertical"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:gravity="center_vertical">
 
             <Button
                 android:id="@+id/editModeButton"
@@ -178,10 +163,8 @@
                 android:backgroundTint="#F44336"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
-
     </FrameLayout>
 
-    <!-- 하단 바 -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
@@ -205,9 +188,7 @@
             android:background="@null"
             android:contentDescription="탭 1" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab2Button"
@@ -218,9 +199,7 @@
             android:background="@null"
             android:contentDescription="탭 2" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab3Button"
@@ -231,9 +210,7 @@
             android:contentDescription="탭 3"
             android:src="@drawable/ic_quest" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab4Button"
@@ -244,9 +221,7 @@
             android:background="@null"
             android:contentDescription="탭 4" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab6Button"
