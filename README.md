@@ -186,3 +186,11 @@ app.post("/user/update", async (req, res) => {
 ```
 name: { type: String },
 ```
+
+<7/17 변경사항>
+- 메인 화면의 캐릭터 이동 애니메이션 추가
+```
+activity_main.xml
+MainActivity.java
+SpriteView.java
+```
