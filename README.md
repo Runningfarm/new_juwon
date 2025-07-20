@@ -194,3 +194,31 @@ activity_main.xml
 MainActivity.java
 SpriteView.java
 ```
+
+<7/20 수정사항>
+1. UI 및 기능 수정
+- 하단 탭이 각 스마트폰의 네비게이션 바와 겹쳐보이는 오류 수정
+- 캐릭터 정지 기능 및 위치 저장 & 복원
+- 아이템 이동 버튼 UI 수정
+
+<수정된 xml 파일>
+```
+activity_main.xml
+activity_mypage.xml
+activity_tab2.xml
+activity_tab3.xml
+activity_tab4.xml
+activity_tab6.xml
+```
+
+<수정된 java 파일>
+```
+MainActivity.java
+RetrofitClient.java
+SelectableitemView.java
+SpriteView.java
+Tab2Activity.java
+Tab3Activity.java
+Tab4Activity.java
+Tab6Activity.java
+```
