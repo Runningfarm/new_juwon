@@ -1,4 +1,3 @@
-// Tab3Activity.java
 package kr.ac.hs.farm;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,12 +10,17 @@ import android.widget.Button;
 import android.content.SharedPreferences;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
+
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import android.widget.Toast;
 import android.util.Log;
+import android.view.View;
 
 public class Tab3Activity extends AppCompatActivity {
 
@@ -30,6 +34,14 @@ public class Tab3Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab3);
         Log.d("퀘스트응답", "Tab3Activity onCreate 진입!");
+
+        // 시스템 인셋 적용
+        View rootView = findViewById(R.id.root_quest);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         // ProgressBar & Button 배열 연결
         progressBars[0] = findViewById(R.id.progressQuest1);
@@ -77,8 +89,6 @@ public class Tab3Activity extends AppCompatActivity {
         findViewById(R.id.tab6Button).setOnClickListener(view -> startActivity(new Intent(this, Tab6Activity.class)));
 
         loadQuestProgressFromServer();
-
-
     }
 
     private void loadQuestProgressFromServer() {
@@ -110,7 +120,6 @@ public class Tab3Activity extends AppCompatActivity {
         });
     }
 
-    // 퀘스트 보상 요청 메서드
     private void claimQuest(int questNumber) {
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
         String token = pref.getString("token", null);
@@ -120,8 +129,6 @@ public class Tab3Activity extends AppCompatActivity {
         }
 
         ApiService api = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-
-        // ✅ 수정된 부분: questNumber를 JSON으로 감싸서 보냄
         ClaimQuestRequest request = new ClaimQuestRequest(questNumber);
         Call<RunResultResponse> call = api.claimQuest("Bearer " + token, request);
 
@@ -133,12 +140,10 @@ public class Tab3Activity extends AppCompatActivity {
                     if (result.isSuccess()) {
                         int reward = result.getReward();
                         Toast.makeText(Tab3Activity.this, "보상으로 먹이 " + reward + "개를 받았습니다!", Toast.LENGTH_SHORT).show();
-
-                        // MainActivity로 보상 먹이 수 전달
                         Intent intent = new Intent(Tab3Activity.this, MainActivity.class);
                         intent.putExtra("reward", reward);
                         startActivity(intent);
-                        finish(); // 현재 퀘스트 화면 종료
+                        finish();
                     } else {
                         Toast.makeText(Tab3Activity.this, "보상을 받을 수 없는 상태입니다.", Toast.LENGTH_SHORT).show();
                     }
@@ -154,23 +159,19 @@ public class Tab3Activity extends AppCompatActivity {
         });
     }
 
-
-
-    // 반복 제거를 위한 UI 업데이트 함수
     private void updateQuestUI(List<QuestProgressResponse.Quest> quests) {
         for (int i = 0; i < Math.min(quests.size(), 9); i++) {
             QuestProgressResponse.Quest q = quests.get(i);
             double target = q.getTarget();
-            int percent = (target > 0) ? (int) ((q.getProgress() / target) * 100) : 0; // 0으로 나누기 방지
+            int percent = (target > 0) ? (int) ((q.getProgress() / target) * 100) : 0;
             progressBars[i].setProgress(percent);
             claimButtons[i].setEnabled(q.isCompleted());
             Log.d("퀘스트응답", "퀘스트 " + (i + 1) + ": " + percent + "% 완료, 완료여부=" + q.isCompleted());
         }
-        // 칼로리 기반 퀘스트 3개: 100, 200, 400 이상일 때 각각 버튼 활성화
+
         for (QuestProgressResponse.Quest q : quests) {
             if ("kcal".equals(q.getType())) {
-                int progress = (int)q.getProgress();
-
+                int progress = (int) q.getProgress();
                 if (progress >= 100) {
                     progressBars[6].setProgress(100);
                     claimButtons[6].setEnabled(true);

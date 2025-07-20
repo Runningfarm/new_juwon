@@ -6,6 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +42,35 @@ public class Tab4Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab4);
+
+        View rootView = findViewById(R.id.root_tab4);
+        View bottomBar = findViewById(R.id.bottomBar);
+        View contentWrapper = findViewById(R.id.contentWrapper);
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            // 하단 바에만 bottom inset 추가
+            bottomBar.setPadding(
+                    bottomBar.getPaddingLeft(),
+                    bottomBar.getPaddingTop(),
+                    bottomBar.getPaddingRight(),
+                    systemInsets.bottom
+            );
+
+            // contentWrapper는 top/left/right만 inset 적용
+            contentWrapper.setPadding(
+                    systemInsets.left,
+                    systemInsets.top,
+                    systemInsets.right,
+                    0
+            );
+
+            return insets;
+        });
+
+// 꼭 호출해야 동작함
+        ViewCompat.requestApplyInsets(rootView);
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 

@@ -16,11 +16,11 @@ public class SelectableItemView extends FrameLayout {
     private View borderView;
     private ImageView deleteButton;
     private ImageView rotateButton;
-    private ImageView sizeIncreaseButton;  // 크기 증가 버튼
-    private ImageView sizeDecreaseButton;  // 크기 감소 버튼
+    private ImageView sizeIncreaseButton;
+    private ImageView sizeDecreaseButton;
 
     private float dX, dY;
-    private int gridSize = 30; // 격자 스냅 크기
+    private int gridSize = 30;
 
     private float rotationDegrees = 0f;
 
@@ -28,9 +28,8 @@ public class SelectableItemView extends FrameLayout {
 
     private int resId;
 
-    private boolean isEditEnabled = false; // 수정 가능 여부
+    private boolean isEditEnabled = false;
 
-    // 인터페이스: 삭제 이벤트 처리용
     public interface OnDoubleTapListener {
         void onDoubleTap();
     }
@@ -48,92 +47,90 @@ public class SelectableItemView extends FrameLayout {
     }
 
     private void init(Context context) {
-        // 아이템 이미지뷰 생성
         itemImage = new ImageView(context);
         itemImage.setImageResource(resId);
         LayoutParams imgParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         itemImage.setLayoutParams(imgParams);
         addView(itemImage);
 
-        // 테두리 뷰 생성
         borderView = new View(context);
         borderView.setBackgroundResource(R.drawable.selection_border);
         borderView.setLayoutParams(imgParams);
         addView(borderView);
 
-        // 삭제 버튼 추가 (오른쪽 상단)
         deleteButton = new ImageView(context);
         deleteButton.setImageResource(android.R.drawable.ic_delete);
-        LayoutParams delParams = new LayoutParams(60, 60);
-        delParams.gravity = Gravity.TOP | Gravity.END;
-        deleteButton.setLayoutParams(delParams);
-        deleteButton.setPadding(8, 8, 8, 8);
+        addView(deleteButton);
+
+        rotateButton = new ImageView(context);
+        rotateButton.setImageResource(android.R.drawable.ic_menu_rotate);
+        addView(rotateButton);
+
+        sizeIncreaseButton = new ImageView(context);
+        sizeIncreaseButton.setImageResource(android.R.drawable.arrow_up_float);
+        addView(sizeIncreaseButton);
+
+        sizeDecreaseButton = new ImageView(context);
+        sizeDecreaseButton.setImageResource(android.R.drawable.arrow_down_float);
+        addView(sizeDecreaseButton);
+
         deleteButton.setOnClickListener(v -> {
             if (doubleTapListener != null) doubleTapListener.onDoubleTap();
         });
-        addView(deleteButton);
 
-        // 회전 버튼 추가 (오른쪽 하단)
-        rotateButton = new ImageView(context);
-        rotateButton.setImageResource(android.R.drawable.ic_menu_rotate);
-        LayoutParams rotateParams = new LayoutParams(60, 60);
-        rotateParams.gravity = Gravity.BOTTOM | Gravity.END;
-        rotateButton.setLayoutParams(rotateParams);
-        rotateButton.setPadding(8, 8, 8, 8);
         rotateButton.setOnClickListener(v -> {
             rotationDegrees = (rotationDegrees + 45f) % 360;
             setRotation(rotationDegrees);
         });
-        addView(rotateButton);
 
-        // 크기 증가 버튼 추가 (왼쪽 상단)
-        sizeIncreaseButton = new ImageView(context);
-        sizeIncreaseButton.setImageResource(android.R.drawable.arrow_up_float); // 적당한 아이콘으로 변경 가능
-        LayoutParams incParams = new LayoutParams(60, 60);
-        incParams.gravity = Gravity.TOP | Gravity.START;
-        sizeIncreaseButton.setLayoutParams(incParams);
-        sizeIncreaseButton.setPadding(8, 8, 8, 8);
         sizeIncreaseButton.setOnClickListener(v -> increaseSize());
-        addView(sizeIncreaseButton);
-
-        // 크기 감소 버튼 추가 (왼쪽 하단)
-        sizeDecreaseButton = new ImageView(context);
-        sizeDecreaseButton.setImageResource(android.R.drawable.arrow_down_float); // 적당한 아이콘으로 변경 가능
-        LayoutParams decParams = new LayoutParams(60, 60);
-        decParams.gravity = Gravity.BOTTOM | Gravity.START;
-        sizeDecreaseButton.setLayoutParams(decParams);
-        sizeDecreaseButton.setPadding(8, 8, 8, 8);
         sizeDecreaseButton.setOnClickListener(v -> decreaseSize());
-        addView(sizeDecreaseButton);
 
-        // 기본적으로 보이지 않도록 설정
         hideBorderAndButtons();
 
-        // 제스처 설정
         gestureDetector = new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                // 더블탭 비활성화 (삭제 버튼으로 대체됨)
                 return true;
             }
         });
 
-        // 터치 리스너 설정 (항상 설정, isEditEnabled로 처리)
         setOnTouchListener(touchListener);
 
-        // 터치 이벤트 수신 가능 여부 초기 세팅
         setClickable(false);
         setFocusable(false);
     }
 
-    // 크기 증가 (격자 단위)
+    // ★ 수정: 버튼 크기 자동 조정
+    private void updateButtonSizes() {
+        int itemSize = Math.min(getWidth(), getHeight());
+        int buttonSize = Math.max(30, itemSize / 4);  // 최소 30
+
+        FrameLayout.LayoutParams layoutParams;
+
+        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
+        layoutParams.gravity = Gravity.TOP | Gravity.END;
+        deleteButton.setLayoutParams(layoutParams);
+
+        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
+        layoutParams.gravity = Gravity.BOTTOM | Gravity.END;
+        rotateButton.setLayoutParams(layoutParams);
+
+        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
+        layoutParams.gravity = Gravity.TOP | Gravity.START;
+        sizeIncreaseButton.setLayoutParams(layoutParams);
+
+        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
+        layoutParams.gravity = Gravity.BOTTOM | Gravity.START;
+        sizeDecreaseButton.setLayoutParams(layoutParams);
+    }
+
     private void increaseSize() {
         int newWidth = getWidth() + gridSize;
         int newHeight = getHeight() + gridSize;
         setSize(newWidth, newHeight);
     }
 
-    // 크기 감소 (격자 단위, 최소 크기 60x60)
     private void decreaseSize() {
         int newWidth = getWidth() - gridSize;
         int newHeight = getHeight() - gridSize;
@@ -142,11 +139,13 @@ public class SelectableItemView extends FrameLayout {
         setSize(newWidth, newHeight);
     }
 
+    // ★ 수정: 크기 변경 시 버튼 크기 반영
     private void setSize(int width, int height) {
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
         params.width = width;
         params.height = height;
         setLayoutParams(params);
+        updateButtonSizes(); // 버튼 크기 재조정
     }
 
     public int getResId() {
@@ -167,22 +166,19 @@ public class SelectableItemView extends FrameLayout {
         rotateButton.setVisibility(View.VISIBLE);
         sizeIncreaseButton.setVisibility(View.VISIBLE);
         sizeDecreaseButton.setVisibility(View.VISIBLE);
+        updateButtonSizes(); // ★ 수정: 보여줄 때도 크기 조정
     }
 
-    // 수정 가능 여부 세팅
     public void setEditEnabled(boolean enabled) {
         isEditEnabled = enabled;
-        // 터치 이벤트 활성화 여부 반영
         setClickable(enabled);
         setFocusable(enabled);
     }
 
     private OnTouchListener touchListener = new OnTouchListener() {
-
         @Override
         public boolean onTouch(View view, MotionEvent event) {
             if (!isEditEnabled) {
-                // 수정 모드가 아닐 땐 터치 이동 불가
                 return false;
             }
 
@@ -196,11 +192,9 @@ public class SelectableItemView extends FrameLayout {
                     float newX = event.getRawX() + dX;
                     float newY = event.getRawY() + dY;
 
-                    // 격자 단위로 스냅
                     newX = Math.round(newX / gridSize) * gridSize;
                     newY = Math.round(newY / gridSize) * gridSize;
 
-                    // 부모 뷰(farmArea) 경계 제한 추가
                     View parent = (View) getParent();
                     if (parent != null) {
                         int parentWidth = parent.getWidth();
@@ -209,11 +203,8 @@ public class SelectableItemView extends FrameLayout {
                         int itemWidth = getWidth();
                         int itemHeight = getHeight();
 
-                        // 좌측 상단 경계 제한 (0 이하로 못 가게)
                         if (newX < 0) newX = 0;
                         if (newY < 0) newY = 0;
-
-                        // 우측 하단 경계 제한 (부모 크기 - 아이템 크기 이상 못 가게)
                         if (newX > parentWidth - itemWidth) newX = parentWidth - itemWidth;
                         if (newY > parentHeight - itemHeight) newY = parentHeight - itemHeight;
                     }
@@ -223,7 +214,6 @@ public class SelectableItemView extends FrameLayout {
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    // 이동 완료 시 저장할 필요 있으면 콜백 구현 가능
                     break;
             }
             return true;

@@ -1,6 +1,8 @@
+// SpriteView.java
 package kr.ac.hs.farm;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -20,8 +22,8 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     private long lastFrameTime;
     private int frameDuration = 120;
 
-    private float currentX = 100, currentY = 100;
-    private float targetX = 100, targetY = 100;
+    private float currentX, currentY;
+    private float targetX, targetY;
     private float speed = 5f;
     private float stopThreshold = 3f;
 
@@ -30,7 +32,8 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder holder;
     private DrawThread thread;
 
-    // 콜백 인터페이스 정의
+    private SharedPreferences spritePrefs;
+
     public interface OnSpriteClickListener {
         void onSpriteClick();
     }
@@ -47,24 +50,19 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         holder = getHolder();
         holder.addCallback(this);
 
-        spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.basic_spritesheet);
+        spritePrefs = context.getSharedPreferences("SpritePrefs", Context.MODE_PRIVATE);
 
+        spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.basic_spritesheet);
         frameWidth = spriteSheet.getWidth() / 4;
         frameHeight = spriteSheet.getHeight() / 4;
 
         srcRect = new Rect(0, 0, frameWidth, frameHeight);
-
-        int size = frameWidth * 2;
-        dstRect = new Rect(
-                (int)(currentX - size / 2f),
-                (int)(currentY - size / 2f),
-                (int)(currentX + size / 2f),
-                (int)(currentY + size / 2f)
-        );
+        dstRect = new Rect(0, 0, frameWidth * 2, frameHeight * 2);
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        checkAndResetPosition();
         thread = new DrawThread();
         thread.setRunning(true);
         thread.start();
@@ -78,7 +76,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             try {
                 thread.join();
                 retry = false;
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException ignored) {}
         }
     }
 
@@ -87,7 +85,6 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private class DrawThread extends Thread {
         private boolean running = false;
-
         public void setRunning(boolean run) {
             running = run;
         }
@@ -108,16 +105,15 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
                         holder.unlockCanvasAndPost(canvas);
                     }
                 }
-
                 try {
-                    sleep(16); // 약 60fps
-                } catch (InterruptedException e) {}
+                    sleep(16);
+                } catch (InterruptedException ignored) {}
             }
         }
     }
 
     private void drawFrame(Canvas canvas) {
-        canvas.drawColor(0xFFFFFAF0); // 배경색
+        canvas.drawColor(0xFFFFFAF0);
 
         float dx = targetX - currentX;
         float dy = targetY - currentY;
@@ -126,11 +122,10 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         if (distance > stopThreshold) {
             isMoving = true;
 
-            // 방향에 따른 애니메이션 줄 선택
             if (Math.abs(dx) > Math.abs(dy)) {
-                frameRow = dx > 0 ? 3 : 2; // 오른쪽(3), 왼쪽(2)
+                frameRow = dx > 0 ? 3 : 2;
             } else {
-                frameRow = dy > 0 ? 0 : 1; // 아래(0), 위(1)
+                frameRow = dy > 0 ? 0 : 1;
             }
 
             float stepX = speed * dx / distance;
@@ -138,7 +133,6 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             currentX += stepX;
             currentY += stepY;
 
-            // 화면 경계 제한
             int viewWidth = getWidth();
             int viewHeight = getHeight();
             int halfSize = (frameWidth * 2) / 2;
@@ -154,7 +148,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             isMoving = false;
             currentX = targetX;
             currentY = targetY;
-            frameIndex = 0; // 정지 시 첫 프레임 유지
+            frameIndex = 0;
         }
 
         srcRect.left = frameIndex * frameWidth;
@@ -177,19 +171,54 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         float touchY = event.getY();
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            // 캐릭터 클릭 시 메뉴 열기
             if (dstRect.contains((int) touchX, (int) touchY)) {
                 if (onSpriteClickListener != null) {
                     onSpriteClickListener.onSpriteClick();
                     return true;
                 }
             }
-
-            // 터치 이동
             targetX = touchX;
             targetY = touchY;
             return true;
         }
         return super.onTouchEvent(event);
+    }
+
+    public void saveCharacterPosition() {
+        spritePrefs.edit()
+                .putFloat("lastX", currentX)
+                .putFloat("lastY", currentY)
+                .apply();
+    }
+
+    public void checkAndResetPosition() {
+        float savedX = spritePrefs.getFloat("lastX", -1);
+        float savedY = spritePrefs.getFloat("lastY", -1);
+        boolean isLoggedIn = getUserId() != null;
+
+        float centerX = getWidth() / 2f;
+        float centerY = getHeight() / 2f;
+
+        if (!isLoggedIn || savedX == -1 || savedY == -1) {
+            currentX = targetX = centerX;
+            currentY = targetY = centerY;
+        } else {
+            currentX = targetX = savedX;
+            currentY = targetY = savedY;
+        }
+    }
+
+    public void resetPositionToCenter() {
+        float centerX = getWidth() / 2f;
+        float centerY = getHeight() / 2f;
+        currentX = targetX = centerX;
+        currentY = targetY = centerY;
+        spritePrefs.edit().remove("lastX").remove("lastY").apply();
+    }
+
+    private String getUserId() {
+        SharedPreferences loginPrefs = getContext().getSharedPreferences("login", Context.MODE_PRIVATE);
+        boolean isLoggedIn = loginPrefs.getBoolean("isLoggedIn", false);
+        return isLoggedIn ? loginPrefs.getString("id", null) : null;
     }
 }

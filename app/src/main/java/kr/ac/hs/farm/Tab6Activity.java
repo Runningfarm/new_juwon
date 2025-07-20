@@ -4,12 +4,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -22,19 +23,31 @@ public class Tab6Activity extends AppCompatActivity {
 
         // ✅ 로그인 여부 확인
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
-//        pref.edit().clear().apply();
         boolean isLoggedIn = pref.getBoolean("isLoggedIn", false);
 
         if (isLoggedIn) {
-            // 이미 로그인 → 마이페이지 이동
             startActivity(new Intent(this, MypageActivity.class));
             finish();
             return;
         }
 
-        // 로그인 안 돼 있음 → 로그인 화면 표시
         setContentView(R.layout.activity_tab6);
-        setupUI(); // 이거 반드시 호출해야 함!!
+        setupUI(); // UI 초기화 필수
+
+        // ✅ WindowInsetsCompat 적용 (상단/하단 시스템 영역 여백)
+        View rootView = findViewById(android.R.id.content);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            Insets sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            // 하단 바에 안 겹치게 padding 설정 (기존 padding 유지하고 덧붙일 수도 있음)
+            v.setPadding(
+                    sysBars.left,
+                    sysBars.top,
+                    sysBars.right,
+                    sysBars.bottom
+            );
+            return insets;
+        });
     }
 
     private void setupUI() {
@@ -57,13 +70,11 @@ public class Tab6Activity extends AppCompatActivity {
         Button buttonLogin = findViewById(R.id.buttonLogin);
         TextView textSignUp = findViewById(R.id.textSignUp);
 
-        // 회원가입 이동
         textSignUp.setOnClickListener(v -> {
             Intent intent = new Intent(Tab6Activity.this, RegisterActivity.class);
             startActivity(intent);
         });
 
-        // 로그인 버튼 처리
         buttonLogin.setOnClickListener(v -> {
             String id = editTextId.getText().toString().trim();
             String password = editTextPassword.getText().toString();
@@ -81,7 +92,6 @@ public class Tab6Activity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        // 로그인 성공
                         String token = response.body().getToken();
                         float weight = response.body().getWeight();
                         String name = response.body().getName();
@@ -98,7 +108,6 @@ public class Tab6Activity extends AppCompatActivity {
                         Toast.makeText(Tab6Activity.this, "로그인 성공!", Toast.LENGTH_SHORT).show();
                         Log.d("LOGIN", "토큰: " + token);
 
-                        // 마이페이지 이동
                         startActivity(new Intent(Tab6Activity.this, MypageActivity.class));
                         finish();
                     } else {

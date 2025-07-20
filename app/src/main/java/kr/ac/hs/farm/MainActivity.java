@@ -1,21 +1,16 @@
+// MainActivity.java
 package kr.ac.hs.farm;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -25,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_FOOD_COUNT = "foodCount";
     private static final String KEY_LEVEL = "level";
     private static final String KEY_EXPERIENCE = "experience";
-    private static final String KEY_ITEMS = "appliedItems";
 
     private ImageButton characterButton;
     private LinearLayout characterMenu;
@@ -34,7 +28,10 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar levelProgressBar;
     private TextView levelText;
     private TextView foodCountText;
+    private FrameLayout farmArea;
+    private Button resetButton;
 
+    private SharedPreferences prefs;
     private boolean isMenuVisible = false;
     private boolean isEditMode = false;
 
@@ -43,14 +40,21 @@ public class MainActivity extends AppCompatActivity {
     private int experience = 0;
     private final int MAX_EXPERIENCE = 100;
 
-    private FrameLayout farmArea;
-    private SharedPreferences prefs;
-    private Button resetButton;
+    private SpriteView spriteView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        View rootView = findViewById(android.R.id.content);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemInsets.left, systemInsets.top, systemInsets.right, systemInsets.bottom);
+            return insets;
+        });
+
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         characterButton = findViewById(R.id.characterButton);
         characterMenu = findViewById(R.id.characterMenu);
@@ -62,31 +66,30 @@ public class MainActivity extends AppCompatActivity {
         farmArea = findViewById(R.id.farmArea);
         resetButton = findViewById(R.id.resetButton);
 
-        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         loadData();
 
         characterButton.setVisibility(View.GONE);
 
-        SpriteView spriteView = new SpriteView(this);
+        spriteView = new SpriteView(this);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
         spriteView.setLayoutParams(params);
         farmArea.addView(spriteView, 0);
+        spriteView.setOnSpriteClickListener(this::toggleCharacterMenu);
 
-        // 캐릭터 클릭 시 메뉴 열기 기능 추가
-        spriteView.setOnSpriteClickListener(() -> toggleCharacterMenu());
+        spriteView.checkAndResetPosition();
 
-        characterButton.setOnClickListener(view -> toggleCharacterMenu());
-        feedButton.setOnClickListener(view -> giveFood());
-        exitButton.setOnClickListener(view -> showExitDialog());
+        characterButton.setOnClickListener(v -> toggleCharacterMenu());
+        feedButton.setOnClickListener(v -> giveFood());
+        exitButton.setOnClickListener(v -> showExitDialog());
 
-        findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, MainActivity.class)));
-        findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab2Activity.class)));
-        findViewById(R.id.tab3Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab3Activity.class)));
-        findViewById(R.id.tab4Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab4Activity.class)));
-        findViewById(R.id.tab6Button).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, Tab6Activity.class)));
+        findViewById(R.id.tab1Button).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.tab2Button).setOnClickListener(v -> startActivity(new Intent(this, Tab2Activity.class)));
+        findViewById(R.id.tab3Button).setOnClickListener(v -> startActivity(new Intent(this, Tab3Activity.class)));
+        findViewById(R.id.tab4Button).setOnClickListener(v -> startActivity(new Intent(this, Tab4Activity.class)));
+        findViewById(R.id.tab6Button).setOnClickListener(v -> startActivity(new Intent(this, Tab6Activity.class)));
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("reward")) {
@@ -100,21 +103,22 @@ public class MainActivity extends AppCompatActivity {
         restoreAppliedItems();
         applyInventoryItem(intent);
 
+        findViewById(R.id.editModeButton).setOnClickListener(v -> {
+            setEditMode(true);
+            Toast.makeText(this, "수정 모드로 전환되었습니다.", Toast.LENGTH_SHORT).show();
+        });
+
         findViewById(R.id.editCompleteButton).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("수정 완료")
                     .setMessage("수정이 완료되었습니까?")
                     .setPositiveButton("네", (dialog, which) -> {
                         setEditMode(false);
+                        saveAppliedItems();
                         Toast.makeText(this, "수정이 완료되었습니다!", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("아니오", null)
                     .show();
-        });
-
-        findViewById(R.id.editModeButton).setOnClickListener(v -> {
-            setEditMode(true);
-            Toast.makeText(MainActivity.this, "수정 모드로 전환되었습니다.", Toast.LENGTH_SHORT).show();
         });
 
         resetButton.setOnClickListener(v -> {
@@ -128,7 +132,10 @@ public class MainActivity extends AppCompatActivity {
                                 farmArea.removeViewAt(i);
                             }
                         }
-                        prefs.edit().putString(KEY_ITEMS, "[]").apply();
+                        prefs.edit().putString(getItemKey(), "[]").apply();
+
+                        spriteView.resetPositionToCenter();
+
                         Toast.makeText(this, "인테리어가 모두 초기화되었습니다.", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("아니오", null)
@@ -136,21 +143,22 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setEditMode(boolean enabled) {
-        isEditMode = enabled;
-        for (int i = 0; i < farmArea.getChildCount(); i++) {
-            View child = farmArea.getChildAt(i);
-            if (child instanceof SelectableItemView) {
-                SelectableItemView itemView = (SelectableItemView) child;
-                if (enabled) {
-                    itemView.showBorderAndButtons();
-                    itemView.setEditEnabled(true);
-                } else {
-                    itemView.hideBorderAndButtons();
-                    itemView.setEditEnabled(false);
-                }
-            }
-        }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (spriteView != null) spriteView.saveCharacterPosition();
+    }
+
+    private String getCurrentUserId() {
+        SharedPreferences loginPrefs = getSharedPreferences("login", MODE_PRIVATE);
+        return loginPrefs.getBoolean("isLoggedIn", false)
+                ? loginPrefs.getString("id", null)
+                : null;
+    }
+
+    private String getItemKey() {
+        String userId = getCurrentUserId();
+        return userId != null ? "appliedItems_" + userId : null;
     }
 
     private void toggleCharacterMenu() {
@@ -199,20 +207,11 @@ public class MainActivity extends AppCompatActivity {
         experience = prefs.getInt(KEY_EXPERIENCE, 0);
     }
 
-    private void showExitDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("앱 종료")
-                .setMessage("정말 종료하시겠습니까?")
-                .setPositiveButton("종료", (dialog, which) -> {
-                    saveData();
-                    finishAffinity();
-                })
-                .setNegativeButton("취소", null)
-                .show();
-    }
-
     private void restoreAppliedItems() {
-        String json = prefs.getString(KEY_ITEMS, "[]");
+        String key = getItemKey();
+        if (key == null) return;
+
+        String json = prefs.getString(key, "[]");
         try {
             JSONArray array = new JSONArray(json);
             for (int i = 0; i < array.length(); i++) {
@@ -228,6 +227,32 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveAppliedItems() {
+        String key = getItemKey();
+        if (key == null) return;
+
+        JSONArray array = new JSONArray();
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View child = farmArea.getChildAt(i);
+            if (child instanceof SelectableItemView) {
+                SelectableItemView itemView = (SelectableItemView) child;
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("resId", itemView.getResId());
+                    obj.put("x", itemView.getX());
+                    obj.put("y", itemView.getY());
+                    obj.put("width", itemView.getWidth());
+                    obj.put("height", itemView.getHeight());
+                    obj.put("rotation", itemView.getRotation());
+                    array.put(obj);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        prefs.edit().putString(key, array.toString()).apply();
     }
 
     private void applyInventoryItem(Intent intent) {
@@ -255,27 +280,29 @@ public class MainActivity extends AppCompatActivity {
         farmArea.addView(itemView);
     }
 
-    private void saveAppliedItems() {
-        JSONArray array = new JSONArray();
+    private void setEditMode(boolean enabled) {
+        isEditMode = enabled;
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (child instanceof SelectableItemView) {
                 SelectableItemView itemView = (SelectableItemView) child;
-                try {
-                    JSONObject obj = new JSONObject();
-                    obj.put("resId", itemView.getResId());
-                    obj.put("x", itemView.getX());
-                    obj.put("y", itemView.getY());
-                    obj.put("width", itemView.getWidth());
-                    obj.put("height", itemView.getHeight());
-                    obj.put("rotation", itemView.getRotation());
-                    array.put(obj);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                itemView.setEditEnabled(enabled);
+                if (enabled) itemView.showBorderAndButtons();
+                else itemView.hideBorderAndButtons();
             }
         }
-        prefs.edit().putString(KEY_ITEMS, array.toString()).apply();
+    }
+
+    private void showExitDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("앱 종료")
+                .setMessage("정말 종료하시겠습니까?")
+                .setPositiveButton("종료", (dialog, which) -> {
+                    saveData();
+                    finishAffinity();
+                })
+                .setNegativeButton("취소", null)
+                .show();
     }
 
     private void showDeleteConfirmDialog(SelectableItemView itemView) {
@@ -284,10 +311,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("정말 삭제하시겠습니까?")
                 .setPositiveButton("네", (dialog, which) -> {
                     itemView.animate()
-                            .alpha(0f)
-                            .scaleX(0f)
-                            .scaleY(0f)
-                            .setDuration(300)
+                            .alpha(0f).scaleX(0f).scaleY(0f).setDuration(300)
                             .withEndAction(() -> {
                                 farmArea.removeView(itemView);
                                 saveAppliedItems();
