@@ -222,3 +222,75 @@ Tab3Activity.java
 Tab4Activity.java
 Tab6Activity.java
 ```
+
+<7/21 수정사항>
+>>> 변경된 내용이 많으니, 확인하실 때 조금만 더 신경 써주시면 감사하겠습니다!
+
+1. 마이페이지 UI 수정
+2. 메인화면 UI 수정
+3. 회원가입 UI 수정
+4. 로그인 UI 수정
+5. 개인정보 수정 화면 UI 수정
+6. 하단바 UI 수정
+7. 개인정보 -> 이름 수정 가능하도록 변경
+
+<기존 수정 파일>
+```
+activity_edit_profile.xml
+activity_main.xml
+activity_mypage.xml
+activity_tab2.xml
+activity_tab3.xml
+activity_tab4.xml
+activity_tab6.xml
+activity_register.xml
+EditProfileActivity.java
+MypageActivity.java
+Tab4Activity.java
+build.gradle.kts (:app)
+```
+
+<새로운 추가 파일>
+```
+bg_button_exit.xml
+bg_button_logout.xml
+bg_button_profile.xml
+bg_button_withdraw.xml
+bg_edittext.xml
+bg_edittext_disabled.xml
+bg_profile_border.xml
+bottom_tab_selector.xml
+ic_back_cute.xml
+rounded_button_bg_green.xml
+rounded_button_bg_blue.xml
+rounded_button_bg_red.xml
+```
+-> app/src/main/res/drawable/에 각 xml 추가
+
+```
+scale_on_click.xml
+fade_in.xml
+fade_out.xml
+bounce.xml
+```
+-> app/src/main/res/anim/에 각 xml 추가
+
++) app/src/main/res/drawable/에 ic_plant.png 이미지 파일 추가
+
++) app/src/main/res/font/에 아래 폰트 파일 추가
+```
+gowundodum_regular.ttf
+nanumgothic_regular.ttf
+```
+
++) app/src/main/assets/에 person_profile.json 파일 추가
+
+-> 전부 추가했는데도 오류가 발생하면 .idea/modules.xml 파일이 있는지 확인
+
+-> 만약 없다면 modules.xml을 추가
+
+-> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
+
+
+
+
