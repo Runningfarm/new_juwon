@@ -5,7 +5,8 @@
     android:id="@+id/root_tab4"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#FFFFFF"
+    android:fitsSystemWindows="true">
 
     <!-- 콘텐츠 영역 -->
     <LinearLayout
@@ -62,7 +63,8 @@
             android:layout_weight="1"
             android:clipToPadding="false"
             android:padding="8dp"
-            android:paddingBottom="80dp"
+            android:layout_marginBottom="70dp"
+            android:paddingBottom="16dp"
             android:scrollbars="vertical"
             app:layout_constraintBottom_toTopOf="@+id/bottomBar" />
     </LinearLayout>
@@ -71,61 +73,103 @@
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:minHeight="60dp"
+        android:layout_height="70dp"
         android:orientation="horizontal"
-        android:background="#EDEDED"
+        android:background="#FFFFFF"
+        android:padding="6dp"
         android:gravity="center"
-        android:paddingBottom="0dp"
-        android:weightSum="5"
+        android:elevation="16dp"
+        android:layout_margin="8dp"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
-            android:id="@+id/tab1Button"
+        <!-- 각 탭 (아이콘 + 라벨) -->
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_home"
-            android:background="@null"
-            android:contentDescription="탭1" />
+            android:orientation="vertical"
+            android:gravity="center">
 
-        <ImageButton
-            android:id="@+id/tab2Button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_running"
-            android:background="@null"
-            android:contentDescription="탭2" />
+            <ImageButton
+                android:id="@+id/tab1Button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_home"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="홈" />
+        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/tab3Button"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_quest"
-            android:background="@null"
-            android:contentDescription="탭3" />
+            android:orientation="vertical"
+            android:gravity="center">
 
-        <ImageButton
-            android:id="@+id/tab4Button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_inventory"
-            android:background="@null"
-            android:contentDescription="탭4" />
+            <ImageButton
+                android:id="@+id/tab2Button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_running"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="러닝" />
+        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/tab6Button"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_mypage"
-            android:background="@null"
-            android:contentDescription="탭6" />
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/tab3Button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_quest"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="퀘스트" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/tab4Button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_inventory"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="인벤토리" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/tab6Button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_mypage"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="마이페이지" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,12 +1,14 @@
 package kr.ac.hs.farm;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,13 +21,20 @@ import retrofit2.Response;
 public class MypageActivity extends AppCompatActivity {
 
     private TextView textWelcome;
-    private Button buttonEditProfile, buttonLogout, buttonWithdraw, buttonExitApp;
+    private LinearLayout buttonEditProfile, buttonLogout, buttonWithdraw, buttonExitApp;
+
+    private Animation scaleAnim, bounceAnim;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mypage);
 
+        // 애니메이션 로딩
+        scaleAnim = AnimationUtils.loadAnimation(this, R.anim.scale_on_click);
+        bounceAnim = AnimationUtils.loadAnimation(this, R.anim.bounce);
+
+        // 뷰 연결
         textWelcome = findViewById(R.id.textWelcome);
         buttonEditProfile = findViewById(R.id.buttonEditProfile);
         buttonLogout = findViewById(R.id.buttonLogout);
@@ -39,25 +48,43 @@ public class MypageActivity extends AppCompatActivity {
         textWelcome.setText("환영합니다, " + name + "님");
 
         buttonEditProfile.setOnClickListener(v -> {
+            v.startAnimation(scaleAnim);
             startActivity(new Intent(this, EditProfileActivity.class));
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         });
 
-        buttonLogout.setOnClickListener(v -> showLogoutDialog());
-        buttonWithdraw.setOnClickListener(v -> showWithdrawDialog(token));
-        buttonExitApp.setOnClickListener(v -> showExitAppDialog());
+        buttonLogout.setOnClickListener(v -> {
+            v.startAnimation(scaleAnim);
+            showLogoutDialog();
+        });
 
-        // 하단 탭 버튼
-        ImageButton tab1Button = findViewById(R.id.tab1Button);
-        ImageButton tab2Button = findViewById(R.id.tab2Button);
-        ImageButton tab3Button = findViewById(R.id.tab3Button);
-        ImageButton tab4Button = findViewById(R.id.tab4Button);
-        ImageButton tab6Button = findViewById(R.id.tab6Button);
+        buttonWithdraw.setOnClickListener(v -> {
+            v.startAnimation(scaleAnim);
+            showWithdrawDialog(token);
+        });
 
-        tab1Button.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
-        tab2Button.setOnClickListener(v -> startActivity(new Intent(this, Tab2Activity.class)));
-        tab3Button.setOnClickListener(v -> startActivity(new Intent(this, Tab3Activity.class)));
-        tab4Button.setOnClickListener(v -> startActivity(new Intent(this, Tab4Activity.class)));
-        tab6Button.setOnClickListener(v -> startActivity(new Intent(this, Tab6Activity.class)));
+        buttonExitApp.setOnClickListener(v -> {
+            v.startAnimation(scaleAnim);
+            showExitAppDialog();
+        });
+
+        // 하단 탭 버튼 연결 및 클릭
+        setTabButton(R.id.tab1Button, MainActivity.class);
+        setTabButton(R.id.tab2Button, Tab2Activity.class);
+        setTabButton(R.id.tab3Button, Tab3Activity.class);
+        setTabButton(R.id.tab4Button, Tab4Activity.class);
+        setTabButton(R.id.tab6Button, MypageActivity.class);  // 현재 페이지
+    }
+
+    private void setTabButton(int buttonId, Class<?> targetActivity) {
+        ImageButton button = findViewById(buttonId);
+        button.setOnClickListener(v -> {
+            v.startAnimation(bounceAnim);
+            if (!this.getClass().equals(targetActivity)) {
+                startActivity(new Intent(this, targetActivity));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            }
+        });
     }
 
     private void showLogoutDialog() {
@@ -67,6 +94,7 @@ public class MypageActivity extends AppCompatActivity {
                     getSharedPreferences("login", MODE_PRIVATE).edit().clear().apply();
                     Toast.makeText(this, "로그아웃이 완료되었습니다.", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(this, Tab6Activity.class));
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     finish();
                 })
                 .setNegativeButton("NO", null)
@@ -91,6 +119,7 @@ public class MypageActivity extends AppCompatActivity {
                                 getSharedPreferences("login", MODE_PRIVATE).edit().clear().apply();
                                 Toast.makeText(MypageActivity.this, "탈퇴 처리 완료되었습니다.", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(MypageActivity.this, Tab6Activity.class));
+                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                                 finish();
                             } else {
                                 Toast.makeText(MypageActivity.this, "서버 오류로 탈퇴 실패", Toast.LENGTH_SHORT).show();

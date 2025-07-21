@@ -1,100 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:padding="12dp"
-    android:background="#FFFFFF">
+    android:background="#FDFCF4"
+    android:padding="20dp">
 
-    <ImageButton
-        android:id="@+id/backButtonRegister"
-        android:layout_width="60dp"
-        android:layout_height="55dp"
-        android:src="@drawable/ic_back"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="뒤로가기"
-        android:layout_gravity="start"
-        android:padding="8dp"
-        android:layout_marginBottom="24dp"
-        android:scaleType="fitCenter" />
-
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="회원가입"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="#222222"
-        android:layout_marginBottom="36dp" />
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="20dp"
+        android:elevation="4dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="30dp">
 
-    <EditText
-        android:id="@+id/editTextRegisterName"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="이름"
-        android:inputType="textPersonName"
-        android:layout_marginBottom="16dp"
-        android:padding="12dp"
-        android:background="@android:drawable/edit_text"
-        android:textColor="#222222"
-        android:textSize="16sp" />
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/backButtonRegister"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:src="@drawable/ic_back"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="뒤로가기"
+            android:padding="6dp"
+            android:layout_gravity="start"
+            android:layout_marginBottom="25dp" />
 
-    <EditText
-        android:id="@+id/editTextRegisterId"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="아이디"
-        android:inputType="textEmailAddress"
-        android:layout_marginBottom="16dp"
-        android:padding="12dp"
-        android:background="@android:drawable/edit_text"
-        android:textColor="#222222"
-        android:textSize="16sp" />
+        <!-- 제목 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="회원가입"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#222222"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="32dp" />
 
-    <EditText
-        android:id="@+id/editTextRegisterPassword"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="비밀번호"
-        android:inputType="textPassword"
-        android:layout_marginBottom="16dp"
-        android:padding="12dp"
-        android:background="@android:drawable/edit_text"
-        android:textColor="#222222"
-        android:textSize="16sp" />
+        <!-- 이름 -->
+        <EditText
+            android:id="@+id/editTextRegisterName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="이름"
+            android:inputType="textPersonName"
+            android:padding="14dp"
+            android:background="@drawable/bg_edittext"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:layout_marginTop="10dp" />
 
-    <EditText
-        android:id="@+id/editTextRegisterWeight"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="체중 (kg)"
-        android:inputType="numberDecimal"
-        android:layout_marginBottom="16dp"
-        android:padding="12dp"
-        android:background="@android:drawable/edit_text"
-        android:textColor="#222222"
-        android:textSize="16sp" />
+        <!-- 아이디 -->
+        <EditText
+            android:id="@+id/editTextRegisterId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="아이디"
+            android:inputType="textEmailAddress"
+            android:padding="14dp"
+            android:background="@drawable/bg_edittext"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:layout_marginTop="15dp" />
 
-    <Button
-        android:id="@+id/buttonRegister"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="회원가입"
-        android:textSize="18sp"
-        android:backgroundTint="#43A047"
-        android:textColor="#FFFFFF"
-        android:layout_marginTop="8dp" />
+        <!-- 비밀번호 -->
+        <EditText
+            android:id="@+id/editTextRegisterPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="비밀번호"
+            android:inputType="textPassword"
+            android:padding="14dp"
+            android:background="@drawable/bg_edittext"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:layout_marginTop="15dp" />
 
-    <TextView
-        android:id="@+id/textGoToLogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="이미 회원가입 하셨습니까? 로그인하기"
-        android:textColor="#AAAAAA"
-        android:textSize="13sp"
-        android:layout_marginTop="12dp"
-        android:textStyle="italic"
-        android:layout_gravity="center_horizontal"
-        android:clickable="true" />
-</LinearLayout>
+        <!-- 체중 -->
+        <EditText
+            android:id="@+id/editTextRegisterWeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="체중 (kg)"
+            android:inputType="numberDecimal"
+            android:padding="14dp"
+            android:background="@drawable/bg_edittext"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:layout_marginTop="15dp" />
+
+        <!-- 회원가입 버튼 -->
+        <Button
+            android:id="@+id/buttonRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="회원가입"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="30dp"
+            android:backgroundTint="#C8E6C9"
+            android:textColor="#FFFFFF"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:fontFamily="@font/nanumgothic_regular" />
+
+
+
+        <!-- 로그인 링크 -->
+        <TextView
+            android:id="@+id/textGoToLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이미 회원가입 하셨습니까? 로그인하기"
+            android:textColor="#AAAAAA"
+            android:textSize="13sp"
+            android:layout_marginTop="18dp"
+            android:textStyle="italic"
+            android:layout_gravity="center_horizontal"
+            android:clickable="true" />
+    </LinearLayout>
+</ScrollView>

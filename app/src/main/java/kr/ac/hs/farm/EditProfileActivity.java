@@ -51,7 +51,7 @@ public class EditProfileActivity extends AppCompatActivity {
         editEmail.setText(id);
         editEmail.setEnabled(false);  // 아이디는 변경 불가
         editName.setText(name);
-        editName.setEnabled(false); // 이름도 변경 불가
+//        editName.setEnabled(false); // 이름도 변경 불가 (지금은 반영 X)
         editWeight.setText(String.valueOf(weight));
 
         // ▼ 수정 버튼 클릭 시

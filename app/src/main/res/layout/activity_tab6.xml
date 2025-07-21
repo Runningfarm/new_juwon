@@ -3,86 +3,114 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF"
+    android:background="#FDFCF4"
     android:id="@+id/rootLayout">
-    <!-- 콘텐츠 영역 -->
-    <LinearLayout
+
+    <!-- 상단 콘텐츠: ScrollView로 감싸기 -->
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="start"
-        android:padding="24dp">
+        android:padding="20dp">
 
-        <!-- ✅ 로그인 제목 추가 -->
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="로그인"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="#222222"
-            android:layout_marginTop="48dp"
-            android:layout_marginBottom="48dp"
-            android:layout_gravity="center_horizontal" />
+            android:orientation="vertical"
+            android:background="#C8E6C9"
+            android:padding="20dp"
+            android:elevation="4dp"
+            android:layout_marginTop="80dp"
+            android:layout_marginBottom="30dp"
+            android:backgroundTint="#FFFFFF">
 
-        <!--  아이디 입력 -->
-        <EditText
-            android:id="@+id/editTextId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="아이디"
-            android:inputType="textEmailAddress"
-            android:layout_marginBottom="12dp"
-            android:padding="12dp"
-            android:textColor="#000000"
-            android:background="@android:drawable/edit_text" />
-        <!--  비밀번호 입력 -->
-        <EditText
-            android:id="@+id/editTextPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="비밀번호"
-            android:inputType="textPassword"
-            android:layout_marginBottom="24dp"
-            android:padding="12dp"
-            android:textColor="#000000"
-            android:background="@android:drawable/edit_text" />
-        <!-- 로그인 버튼 -->
-        <Button
-            android:id="@+id/buttonLogin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="로그인"
-            android:textSize="16sp"
-            android:textColor="#FFFFFF"
-            android:background="#3F51B5"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp" />
-        <!-- 회원가입 텍스트 -->
-        <TextView
-            android:id="@+id/textSignUp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="회원가입"
-            android:textColor="#3F51B5"
-            android:textSize="14sp"
-            android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:textStyle="bold" />
-    </LinearLayout>
-    <!-- 하단 탭바 -->
+            <!-- 로그인 제목 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="로그인"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="#222222"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="32dp" />
+
+            <!-- 아이디 입력 -->
+            <EditText
+                android:id="@+id/editTextId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="아이디"
+                android:inputType="textEmailAddress"
+                android:padding="14dp"
+                android:background="@drawable/bg_edittext"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp" />
+
+            <!-- 비밀번호 입력 -->
+            <EditText
+                android:id="@+id/editTextPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="비밀번호"
+                android:inputType="textPassword"
+                android:padding="14dp"
+                android:background="@drawable/bg_edittext"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="15dp" />
+
+            <!-- 로그인 버튼 -->
+            <Button
+                android:id="@+id/buttonLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="로그인"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginTop="30dp"
+                android:backgroundTint="#C8E6C9"
+                android:textColor="#FFFFFF"
+                android:elevation="4dp"
+                android:padding="12dp"
+                android:fontFamily="@font/nanumgothic_regular" />
+
+            <!-- 회원가입 텍스트 -->
+            <TextView
+                android:id="@+id/textSignUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="회원가입"
+                android:textColor="#3F51B5"
+                android:textSize="14sp"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="18dp"
+                android:paddingBottom="4dp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 하단 탭바 (기존 유지) -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:background="#EDEDED"
-        android:gravity="center"
-        android:weightSum="5">
+        android:background="#FFFFFF"
+        android:layout_margin="8dp"
+        android:padding="6dp"
+        android:elevation="10dp"
+        android:clipToPadding="false"
+        android:backgroundTint="#FFFFFF"
+        android:backgroundTintMode="src_in"
+        android:weightSum="5"
+        android:gravity="center">
+
         <ImageButton
             android:id="@+id/tab1Button"
             android:layout_width="0dp"
@@ -92,9 +120,7 @@
             android:background="@null"
             android:contentDescription="탭 1" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab2Button"
@@ -105,9 +131,7 @@
             android:background="@null"
             android:contentDescription="탭 2" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab3Button"
@@ -118,9 +142,7 @@
             android:contentDescription="탭 3"
             android:src="@drawable/ic_quest" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab4Button"
@@ -131,9 +153,7 @@
             android:background="@null"
             android:contentDescription="탭 4" />
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
+        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/tab6Button"

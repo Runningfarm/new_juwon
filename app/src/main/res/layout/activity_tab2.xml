@@ -204,12 +204,18 @@
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="70dp"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:background="#EDEDED"
-        android:gravity="center"
-        android:weightSum="5">
+        android:background="#FFFFFF"
+        android:layout_margin="8dp"
+        android:padding="6dp"
+        android:elevation="10dp"
+        android:clipToPadding="false"
+        android:backgroundTint="#FFFFFF"
+        android:backgroundTintMode="src_in"
+        android:weightSum="5"
+        android:gravity="center">
 
         <ImageButton
             android:id="@+id/tab1Button"
