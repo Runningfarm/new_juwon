@@ -1,4 +1,3 @@
-// SpriteView.java
 package kr.ac.hs.farm;
 
 import android.content.Context;
@@ -14,6 +13,7 @@ import android.view.SurfaceView;
 public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Bitmap spriteSheet;
+    private Bitmap backgroundImage;
     private Rect srcRect, dstRect;
     private int frameWidth, frameHeight;
     private int frameCount = 4;
@@ -53,6 +53,8 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         spritePrefs = context.getSharedPreferences("SpritePrefs", Context.MODE_PRIVATE);
 
         spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.basic_spritesheet);
+        backgroundImage = BitmapFactory.decodeResource(getResources(), R.drawable.grass_tiles);
+
         frameWidth = spriteSheet.getWidth() / 4;
         frameHeight = spriteSheet.getHeight() / 4;
 
@@ -76,15 +78,18 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             try {
                 thread.join();
                 retry = false;
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    }
 
     private class DrawThread extends Thread {
         private boolean running = false;
+
         public void setRunning(boolean run) {
             running = run;
         }
@@ -107,13 +112,17 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 try {
                     sleep(16);
-                } catch (InterruptedException ignored) {}
+                } catch (InterruptedException ignored) {
+                }
             }
         }
     }
 
     private void drawFrame(Canvas canvas) {
-        canvas.drawColor(0xFFFFFAF0);
+        if (backgroundImage == null) return;
+
+        int viewWidth = getWidth();
+        int viewHeight = getHeight();
 
         float dx = targetX - currentX;
         float dy = targetY - currentY;
@@ -133,11 +142,8 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             currentX += stepX;
             currentY += stepY;
 
-            int viewWidth = getWidth();
-            int viewHeight = getHeight();
-            int halfSize = (frameWidth * 2) / 2;
-            currentX = Math.max(halfSize, Math.min(viewWidth - halfSize, currentX));
-            currentY = Math.max(halfSize, Math.min(viewHeight - halfSize, currentY));
+            currentX = Math.max(0, Math.min(backgroundImage.getWidth(), currentX));
+            currentY = Math.max(0, Math.min(backgroundImage.getHeight(), currentY));
 
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastFrameTime > frameDuration) {
@@ -151,14 +157,55 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             frameIndex = 0;
         }
 
+        // 중심 위치 계산
+        float centerX = viewWidth / 2f;
+        float centerY = viewHeight / 2f;
+
+        float offsetX = currentX - centerX;
+        float offsetY = currentY - centerY;
+
+        int bgLeft = (int) offsetX;
+        int bgTop = (int) offsetY;
+        int bgRight = bgLeft + viewWidth;
+        int bgBottom = bgTop + viewHeight;
+
+        // 배경 범위 초과 방지
+        if (bgLeft < 0) {
+            bgRight += -bgLeft;
+            bgLeft = 0;
+        }
+        if (bgTop < 0) {
+            bgBottom += -bgTop;
+            bgTop = 0;
+        }
+        if (bgRight > backgroundImage.getWidth()) {
+            bgLeft -= (bgRight - backgroundImage.getWidth());
+            bgRight = backgroundImage.getWidth();
+        }
+        if (bgBottom > backgroundImage.getHeight()) {
+            bgTop -= (bgBottom - backgroundImage.getHeight());
+            bgBottom = backgroundImage.getHeight();
+        }
+
+        bgLeft = Math.max(0, bgLeft);
+        bgTop = Math.max(0, bgTop);
+        bgRight = Math.min(backgroundImage.getWidth(), bgRight);
+        bgBottom = Math.min(backgroundImage.getHeight(), bgBottom);
+
+        Rect bgSrc = new Rect(bgLeft, bgTop, bgRight, bgBottom);
+        Rect bgDst = new Rect(0, 0, viewWidth, viewHeight);
+        canvas.drawBitmap(backgroundImage, bgSrc, bgDst, null);
+
+        // 스프라이트 자르기
         srcRect.left = frameIndex * frameWidth;
         srcRect.top = frameRow * frameHeight;
         srcRect.right = srcRect.left + frameWidth;
         srcRect.bottom = srcRect.top + frameHeight;
 
+        // 캐릭터 화면 중심
         int size = frameWidth * 2;
-        dstRect.left = (int) (currentX - size / 2f);
-        dstRect.top = (int) (currentY - size / 2f);
+        dstRect.left = (int) (centerX - size / 2f);
+        dstRect.top = (int) (centerY - size / 2f);
         dstRect.right = dstRect.left + size;
         dstRect.bottom = dstRect.top + size;
 
@@ -177,8 +224,14 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
                     return true;
                 }
             }
-            targetX = touchX;
-            targetY = touchY;
+
+            float centerX = getWidth() / 2f;
+            float centerY = getHeight() / 2f;
+            float dx = touchX - centerX;
+            float dy = touchY - centerY;
+
+            targetX = currentX + dx;
+            targetY = currentY + dy;
             return true;
         }
         return super.onTouchEvent(event);
@@ -196,12 +249,12 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         float savedY = spritePrefs.getFloat("lastY", -1);
         boolean isLoggedIn = getUserId() != null;
 
-        float centerX = getWidth() / 2f;
-        float centerY = getHeight() / 2f;
+        float defaultX = backgroundImage.getWidth() / 2f;
+        float defaultY = backgroundImage.getHeight() / 2f;
 
         if (!isLoggedIn || savedX == -1 || savedY == -1) {
-            currentX = targetX = centerX;
-            currentY = targetY = centerY;
+            currentX = targetX = defaultX;
+            currentY = targetY = defaultY;
         } else {
             currentX = targetX = savedX;
             currentY = targetY = savedY;
@@ -209,10 +262,10 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void resetPositionToCenter() {
-        float centerX = getWidth() / 2f;
-        float centerY = getHeight() / 2f;
-        currentX = targetX = centerX;
-        currentY = targetY = centerY;
+        float defaultX = backgroundImage.getWidth() / 2f;
+        float defaultY = backgroundImage.getHeight() / 2f;
+        currentX = targetX = defaultX;
+        currentY = targetY = defaultY;
         spritePrefs.edit().remove("lastX").remove("lastY").apply();
     }
 
