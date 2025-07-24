@@ -1,13 +1,13 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="#9AC9A2" /> <!-- 누른 상태: 약간 진한 민트 -->
+            <solid android:color="#AED9A0" /> <!-- 누른 상태: 진초록 -->
             <corners android:radius="16dp" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#A8DAB5" /> <!-- 기본 상태: 파스텔 민트 -->
+            <solid android:color="#D6EDC3" /> <!-- 기본 상태: 파스텔 연초록 -->
             <corners android:radius="16dp" />
         </shape>
     </item>
