@@ -301,6 +301,40 @@ SpriteView.java 수정
 app/src/main/res/drawable/에 grass_tiles.png 이미지 파일 추가
 ```
 
+# <7/24 수정사항>
+1. 메인화면 UI 수정
+2. 로그인화면 UI 수정
+3. running result 화면 UI 수정
+4. 배경 이미지 2개 추가 (soil_tiles & stone_tiles)
 
+
+- 수정한 파일
+```
+activity_main.xml
+activity_tab6.xml
+activity_runningresult.xml
+rounded_button_bg_green.xml
+rounded_button_bg_blue.xml
+RunningResult.java
+```
+
+- 추가한 파일
+```
+rounded_button_bg_yellow.xml
+ic_fire.png
+ic_footsteps.png
+ic_leaf_speed.png
+soil_tiles.png
+stone_tiles.png
+```
+-> app/src/main/res/drawable/에 각 파일 추가
+
+- 삭제한 파일
+```
+rounded_button_bg_red.xml
+```
+-> app/src/main/res/drawable/에서 삭제
+
+-> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
 
