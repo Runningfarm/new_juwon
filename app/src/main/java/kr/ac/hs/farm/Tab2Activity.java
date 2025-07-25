@@ -253,7 +253,7 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMap.setMyLocationEnabled(true);
 
-        polylineOptions = new PolylineOptions().width(12f).color(Color.BLUE).geodesic(true);
+        polylineOptions = new PolylineOptions().width(12f).color(Color.parseColor("#2E7D32")).geodesic(true);
         polyline = mMap.addPolyline(polylineOptions);
 
         startLocationUpdates();

@@ -4,9 +4,8 @@
     android:id="@+id/root_running"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F7FF">
+    android:background="#FFFDF6">
 
-    <!-- padding을 줄 수 있는 래핑용 FrameLayout -->
     <FrameLayout
         android:id="@+id/contentWrapper"
         android:layout_width="match_parent"
@@ -27,7 +26,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:background="#E6F4EA"> <!-- 연초록 배경 -->
 
             <LinearLayout
                 android:id="@+id/quest_progress_container"
@@ -42,10 +42,12 @@
                     android:id="@+id/quest_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="퀘스트"
+                    android:layout_marginBottom="1dp"
+                    android:text="퀘스트 진행"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="#000000" />
+                    android:textColor="#5D7755"
+                    android:fontFamily="@font/gowundodum_regular" />
 
                 <ProgressBar
                     android:id="@+id/quest_progress_bar"
@@ -54,6 +56,7 @@
                     android:layout_height="8dp"
                     android:progress="60"
                     android:max="100"
+                    android:progressDrawable="@drawable/progressbar_green"
                     android:layout_marginTop="4dp"
                     android:layout_marginBottom="2dp" />
 
@@ -61,9 +64,11 @@
                     android:id="@+id/quest_progress_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
                     android:text="3 / 5 완료"
                     android:textSize="12sp"
-                    android:textColor="#444444" />
+                    android:textColor="#777777"
+                    android:fontFamily="@font/nanumgothic_regular" />
             </LinearLayout>
         </LinearLayout>
 
@@ -74,16 +79,19 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginTop="420dp"
-            android:background="@android:color/white"
+            android:background="#FFFFFF"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="24dp"
+            android:elevation="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Running time"
+                android:text="🏃 러닝 시간"
                 android:textColor="#444444"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/nanumgothic_regular" />
 
             <TextView
                 android:id="@+id/time"
@@ -91,16 +99,19 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:text="00:00:00"
-                android:textColor="#000000"
+                android:textColor="#222222"
                 android:textSize="32sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/gowundodum_regular" />
 
+            <!-- 거리/칼로리/페이스 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="3">
 
+                <!-- 거리 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -111,16 +122,19 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/running" />
+                        android:src="@drawable/ic_footsteps" />
 
                     <TextView
                         android:id="@+id/tvDistance"
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="00.00 km" />
+                        android:text="00.00 km"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/nanumgothic_regular" />
                 </LinearLayout>
 
+                <!-- 칼로리 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -131,16 +145,19 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/kcal" />
+                        android:src="@drawable/ic_fire" />
 
                     <TextView
                         android:id="@+id/tvKcal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="00 kcal" />
+                        android:text="00 kcal"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/nanumgothic_regular" />
                 </LinearLayout>
 
+                <!-- 페이스 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -151,17 +168,20 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/speed" />
+                        android:src="@drawable/ic_leaf_speed" />
 
                     <TextView
                         android:id="@+id/tvPace"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="00.00 km/h" />
+                        android:text="00.00 km/h"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/nanumgothic_regular" />
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- 버튼 바 -->
             <LinearLayout
                 android:id="@+id/active_bar"
                 android:layout_width="match_parent"
@@ -177,15 +197,20 @@
                     android:layout_weight="1"
                     android:layout_gravity="center"
                     android:src="@drawable/play"
+
+                    android:backgroundTint="#DFF3FF"
+                    android:backgroundTintMode="src_in"
                     android:contentDescription="러닝 시작" />
 
                 <ImageButton
                     android:id="@+id/pause_button"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:layout_gravity="center"
                     android:src="@drawable/pause"
+                    android:backgroundTint="#FFF5D7"
+                    android:backgroundTintMode="src_in"
                     android:contentDescription="일시정지" />
 
                 <ImageButton
@@ -195,6 +220,8 @@
                     android:layout_weight="1"
                     android:layout_gravity="center"
                     android:src="@drawable/end"
+                    android:backgroundTint="#F3FFE1"
+                    android:backgroundTintMode="src_in"
                     android:contentDescription="러닝 종료" />
             </LinearLayout>
         </LinearLayout>
@@ -223,7 +250,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/ic_home"
-            android:background="@null"
+            android:background="@drawable/bottom_tab_selector"
             android:contentDescription="탭 1" />
 
         <Space android:layout_width="16dp" android:layout_height="wrap_content" />
@@ -234,7 +261,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/ic_running"
-            android:background="@null"
+            android:background="@drawable/bottom_tab_selector"
             android:contentDescription="탭 2" />
 
         <Space android:layout_width="16dp" android:layout_height="wrap_content" />
@@ -244,7 +271,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@null"
+            android:background="@drawable/bottom_tab_selector"
             android:contentDescription="탭 3"
             android:src="@drawable/ic_quest" />
 
@@ -256,7 +283,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/ic_inventory"
-            android:background="@null"
+            android:background="@drawable/bottom_tab_selector"
             android:contentDescription="탭 4" />
 
         <Space android:layout_width="16dp" android:layout_height="wrap_content" />
@@ -267,7 +294,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/ic_mypage"
-            android:background="@null"
+            android:background="@drawable/bottom_tab_selector"
             android:contentDescription="탭 6" />
     </LinearLayout>
 </RelativeLayout>

@@ -80,7 +80,7 @@ public class RunningResult extends AppCompatActivity implements OnMapReadyCallba
             PolylineOptions polylineOptions = new PolylineOptions()
                     .addAll(runPath)
                     .width(10f)
-                    .color(Color.GREEN)
+                    .color(Color.parseColor("#2E7D32"))
                     .geodesic(true);
 
             googleMap.addPolyline(polylineOptions);
