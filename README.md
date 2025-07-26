@@ -337,4 +337,20 @@ rounded_button_bg_red.xml
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
+# <7/25 수정사항>
+1. 러닝 화면 (TAB2) UI 수정
+2. RunningResult 화면 폴리라인 색상 수정
 
+- 수정한 파일
+```
+activity_tab2.xml
+Tab2Activity.java
+RunningResult.java
+```
+
+- 추가한 파일 (app/src/main/res/drawable/에 추가)
+```
+progressbar_green.xml
+```
+
+-> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
