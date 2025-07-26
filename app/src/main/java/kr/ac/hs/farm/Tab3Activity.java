@@ -9,6 +9,8 @@ import android.widget.ProgressBar;
 import android.widget.Button;
 import android.content.SharedPreferences;
 import android.widget.ImageView;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -35,7 +37,6 @@ public class Tab3Activity extends AppCompatActivity {
         setContentView(R.layout.activity_tab3);
         Log.d("퀘스트응답", "Tab3Activity onCreate 진입!");
 
-        // 시스템 인셋 적용
         View rootView = findViewById(R.id.root_quest);
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -43,7 +44,6 @@ public class Tab3Activity extends AppCompatActivity {
             return insets;
         });
 
-        // ProgressBar & Button 배열 연결
         progressBars[0] = findViewById(R.id.progressQuest1);
         progressBars[1] = findViewById(R.id.progressQuest2);
         progressBars[2] = findViewById(R.id.progressQuest3);
@@ -77,11 +77,10 @@ public class Tab3Activity extends AppCompatActivity {
         for (int i = 0; i < claimButtons.length; i++) {
             final int index = i;
             claimButtons[i].setOnClickListener(v -> {
-                claimQuest(index + 1); // 퀘스트 번호 1~9
+                claimQuest(index + 1);
             });
         }
 
-        // 탭 이동 버튼
         findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(this, Tab2Activity.class)));
         findViewById(R.id.tab3Button).setOnClickListener(view -> startActivity(new Intent(this, Tab3Activity.class)));
@@ -95,7 +94,6 @@ public class Tab3Activity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
         String token = pref.getString("token", null);
         if (token == null) {
-            Log.d("퀘스트응답", "토큰이 null이어서 return");
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -114,7 +112,6 @@ public class Tab3Activity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<QuestProgressResponse> call, Throwable t) {
-                Log.e("퀘스트응답", "네트워크 오류: " + t.getMessage());
                 Toast.makeText(Tab3Activity.this, "서버 연결 실패", Toast.LENGTH_SHORT).show();
             }
         });
@@ -140,6 +137,16 @@ public class Tab3Activity extends AppCompatActivity {
                     if (result.isSuccess()) {
                         int reward = result.getReward();
                         Toast.makeText(Tab3Activity.this, "보상으로 먹이 " + reward + "개를 받았습니다!", Toast.LENGTH_SHORT).show();
+
+                        // 상자 열기 애니메이션 적용
+                        int boxId = getResources().getIdentifier("boxReward" + questNumber, "id", getPackageName());
+                        ImageView box = findViewById(boxId);
+                        if (box != null) {
+                            box.setImageResource(R.drawable.box_opened);
+                            Animation fadeIn = AnimationUtils.loadAnimation(Tab3Activity.this, R.anim.fade_open);
+                            box.startAnimation(fadeIn);
+                        }
+
                         Intent intent = new Intent(Tab3Activity.this, MainActivity.class);
                         intent.putExtra("reward", reward);
                         startActivity(intent);
@@ -166,7 +173,6 @@ public class Tab3Activity extends AppCompatActivity {
             int percent = (target > 0) ? (int) ((q.getProgress() / target) * 100) : 0;
             progressBars[i].setProgress(percent);
             claimButtons[i].setEnabled(q.isCompleted());
-            Log.d("퀘스트응답", "퀘스트 " + (i + 1) + ": " + percent + "% 완료, 완료여부=" + q.isCompleted());
         }
 
         for (QuestProgressResponse.Quest q : quests) {
