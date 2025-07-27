@@ -1,4 +1,4 @@
-# <7/9 변경사항>
+## <7/9 변경사항>
 
 은수님께서 보내주신 파일을 병합한 후에 제 쪽 파일과 충돌되는 부분이나 오탈자들을 수정했습니다. 그런데 수정된 파일 수가 너무 많아서 기존 레포에 올리는 것보다 새 레포를 만들어서 다시 정리해서 업로드했습니다. 기존 파일들 잘 실행된다면 아래 부분만 바꾸시면 될 거예요.
 
@@ -30,7 +30,7 @@ SelectableItemView.java
 안드로이드 스튜디오에서 은수님께서 작업하신 부분과 딱히 겹치는 수정된 부분은 없는 것 같아요.
 그래서 각자 가지고 있는 Farm 프로젝트 파일에 위 코드들을 복사 붙여넣기해도 무방할 것 같습니다.
 
-# <7/11 수정 사항>
+## <7/11 수정 사항>
 
 1. 안드로이드 스튜디오
 
@@ -187,7 +187,7 @@ app.post("/user/update", async (req, res) => {
 name: { type: String },
 ```
 
-# <7/17 변경사항>
+## <7/17 변경사항>
 - 메인 화면의 캐릭터 이동 애니메이션 추가
 ```
 activity_main.xml
@@ -195,7 +195,7 @@ MainActivity.java
 SpriteView.java
 ```
 
-# <7/20 수정사항>
+## <7/20 수정사항>
 1. UI 및 기능 수정
 - 하단 탭이 각 스마트폰의 네비게이션 바와 겹쳐보이는 오류 수정
 - 캐릭터 정지 기능 및 위치 저장 & 복원
@@ -223,7 +223,7 @@ Tab4Activity.java
 Tab6Activity.java
 ```
 
-# <7/21 수정사항>
+## <7/21 수정사항>
 >>> 변경된 내용이 많으니, 확인하실 때 조금만 더 신경 써주시면 감사하겠습니다!
 
 1. 마이페이지 UI 수정
@@ -291,7 +291,7 @@ nanumgothic_regular.ttf
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
-# <7/22 수정사항>
+## <7/22 수정사항>
 1. 잔디 배경 추가
 2. 배경 스크롤 적용
 -> 캐릭터를 화면 중앙에 고정하고 배경 이미지를 이동시키는 방식
@@ -301,7 +301,7 @@ SpriteView.java 수정
 app/src/main/res/drawable/에 grass_tiles.png 이미지 파일 추가
 ```
 
-# <7/24 수정사항>
+## <7/24 수정사항>
 1. 메인화면 UI 수정
 2. 로그인화면 UI 수정
 3. running result 화면 UI 수정
@@ -337,7 +337,7 @@ rounded_button_bg_red.xml
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
-# <7/25 수정사항>
+## <7/25 수정사항>
 1. 러닝 화면 (TAB2) UI 수정
 2. RunningResult 화면 폴리라인 색상 수정
 
@@ -355,7 +355,7 @@ progressbar_green.xml
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
-# <7/26 수정사항>
+## <7/26 수정사항>
 1. 퀘스트 화면 (TAB3) UI 수정
 2. RunningResult 화면 배경 색 수정
 
@@ -382,7 +382,7 @@ fade_open.xml
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
-# <7/27 수정사항>
+## <7/27 수정사항>
 1. 퀘스트 화면 (TAB3) UI 살짝 수정
 2. 인벤토리 화면 (TAB4) UI 수정
 
@@ -398,3 +398,103 @@ activity_tab4.xml
 ```
 chip_selector.xml
 ```
+
+# 7/17~7/27 전체 수정 내용
+
+<기존 수정 파일>
+- xml 파일
+```
+activity_edit_profile.xml
+activity_main.xml
+activity_mypage.xml
+activity_register.xml
+activity_runningresult.xml
+activity_tab2.xml
+activity_tab3.xml
+activity_tab4.xml
+activity_tab6.xml
+```
+
+- java 파일
+```
+EditProfileActivity.java
+MainActivity.java
+MypageActivity.java
+RetrofitClient.java
+RunningResult.java
+SelectableitemView.java
+SpriteView.java
+Tab2Activity.java
+Tab3Activity.java
+Tab4Activity.java
+Tab6Activity.java
+```
+
+-기타 파일
+```
+build.gradle.kts (:app)
+```
+
+<새로운 추가 파일>
+
+※ anim, font, assets, color 폴더가 없으면 새로 만들기
+
+1. app/src/main/res/drawable/에 각 xml 추가
+```
+bg_button_exit.xml
+bg_button_logout.xml
+bg_button_profile.xml
+bg_button_withdraw.xml
+bg_edittext.xml
+bg_edittext_disabled.xml
+bg_profile_border.xml
+bottom_tab_selector.xml
+box_locked.xml
+box_opened.xml
+ic_back_cute.xml
+progress_green_custom.xml
+progressbar_green.xml
+rounded_button_bg_blue.xml
+rounded_button_bg_green.xml
+rounded_button_bg_yellow.xml
+```
+
+2. app/src/main/res/drawable/에 각 png 추가
+```
+ic_plant.png
+ic_fire.png
+ic_footsteps.png
+ic_leaf_speed.png
+grass_tiles.png
+soil_tiles.png
+stone_tiles.png
+```
+
+3. app/src/main/res/anim/에 각 xml 추가 
+```
+bounce.xml
+fade_in.xml
+fade_out.xml
+fade_open.xml
+scale_on_click.xml
+```
+
+4. app/src/main/res/font/에 각 ttf 추가
+```
+gowundodum_regular.ttf
+nanumgothic_regular.ttf
+```
+
+5. app/src/main/assets/에 각 json 추가
+```
+person_profile.json
+```
+
+6. app/src/main/res/color/에 각 xml 추가
+```
+chip_selector.xml
+```
+
++) 전부 추가했는데도 오류가 발생하면 .idea/modules.xml 파일이 있는지 확인 후에 만약 없다면 modules.xml을 추가
+
++) RetrofitClient에 설정된 IP는 본인 환경에 맞게 설정
