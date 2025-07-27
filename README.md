@@ -382,7 +382,7 @@ fade_open.xml
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
 
-## <7/27 수정사항>
+## <7/27 수정사항_(1)>
 1. 퀘스트 화면 (TAB3) UI 살짝 수정
 2. 인벤토리 화면 (TAB4) UI 수정
 
@@ -397,6 +397,18 @@ activity_tab4.xml
 1. app/src/main/res/color/에 추가
 ```
 chip_selector.xml
+```
+
+## <7/27 수정사항_(2)>
+인벤토리 화면에서 배경 아이템을 적용하는 로직 추가
+
+- 수정한 파일
+```
+activity_tab4.xml
+ItemAdapter.java
+MainActivity.java
+SpriteView.java
+Tab4Activity.java
 ```
 
 # 7/17~7/27 전체 수정 내용
@@ -418,6 +430,7 @@ activity_tab6.xml
 - java 파일
 ```
 EditProfileActivity.java
+ItemAdapter.java
 MainActivity.java
 MypageActivity.java
 RetrofitClient.java
