@@ -37,6 +37,8 @@ public class Tab4Activity extends AppCompatActivity {
 
     private SharedPreferences prefs;
 
+    private Chip chipBackground;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,6 +112,15 @@ public class Tab4Activity extends AppCompatActivity {
             loadItems("가구");
             adapter.updateList(itemList);
         });
+
+        chipBackground = findViewById(R.id.chip_background);
+
+        chipBackground.setOnClickListener(v -> {
+            loadItems("배경");
+            adapter.updateList(itemList);
+        });
+
+
     }
 
     private void loadItems(String category) {
@@ -152,7 +163,19 @@ public class Tab4Activity extends AppCompatActivity {
                 }
             }
 
-        } else if (category.equals("먹이")) {
+        }
+
+        else if (category.equals("배경")) {
+            String[] bgNames = {"grass_tiles", "soil_tiles", "stone_tiles"};
+            for (String bg : bgNames) {
+                int resId = getResources().getIdentifier(bg, "drawable", getPackageName());
+                if (resId != 0) {
+                    itemList.add(new Item("배경", "배경", 0, resId, true));
+                }
+            }
+        }
+
+        else if (category.equals("먹이")) {
             int feedImageRes = R.drawable.feed_item;
             int count = prefs.getInt(KEY_FOOD_COUNT, 3);
             itemList.add(new Item("먹이 아이템", "먹이", count, feedImageRes, true));

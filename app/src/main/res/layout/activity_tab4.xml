@@ -85,6 +85,16 @@
                 android:text="가구"
                 android:textColor="#5D7755"
                 app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_background"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="배경"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
         </com.google.android.material.chip.ChipGroup>
 
         <androidx.recyclerview.widget.RecyclerView

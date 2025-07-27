@@ -132,8 +132,18 @@ public class MainActivity extends AppCompatActivity {
                                 farmArea.removeViewAt(i);
                             }
                         }
-                        prefs.edit().putString(getItemKey(), "[]").apply();
 
+                        // 인테리어 아이템 초기화
+                        prefs.edit().remove(getItemKey()).apply();
+
+                        // 배경도 grass_tiles로 초기화
+                        SharedPreferences spritePrefs = getSharedPreferences("SpritePrefs", MODE_PRIVATE);
+                        String userId = getCurrentUserId();
+                        String bgKey = userId != null ? "selectedBackground_" + userId : "selectedBackground";
+                        spritePrefs.edit().putInt(bgKey, R.drawable.grass_tiles).apply();
+
+                        // 반영
+                        spriteView.reloadBackground();
                         spriteView.resetPositionToCenter();
 
                         Toast.makeText(this, "인테리어가 모두 초기화되었습니다.", Toast.LENGTH_SHORT).show();
@@ -216,6 +226,13 @@ public class MainActivity extends AppCompatActivity {
             JSONArray array = new JSONArray(json);
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+
+                if (obj.has("isBackground") && obj.getBoolean("isBackground")) {
+                    int bgResId = obj.getInt("resId");
+                    prefs.edit().putInt("selectedBackground", bgResId).apply();
+                    continue;
+                }
+
                 int resId = obj.getInt("resId");
                 float x = (float) obj.getDouble("x");
                 float y = (float) obj.getDouble("y");
@@ -252,6 +269,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
+        int bgResId = prefs.getInt("selectedBackground", R.drawable.grass_tiles);
+        JSONObject bgObj = new JSONObject();
+        try {
+            bgObj.put("resId", bgResId);
+            bgObj.put("isBackground", true);
+            array.put(bgObj);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         prefs.edit().putString(key, array.toString()).apply();
     }
 

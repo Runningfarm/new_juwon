@@ -51,9 +51,13 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         holder.addCallback(this);
 
         spritePrefs = context.getSharedPreferences("SpritePrefs", Context.MODE_PRIVATE);
+        String userId = getUserId();
+        String bgKey = (userId != null) ? "selectedBackground_" + userId : "selectedBackground";
+
+        int bgResId = spritePrefs.getInt(bgKey, R.drawable.grass_tiles);
+        backgroundImage = BitmapFactory.decodeResource(getResources(), bgResId);
 
         spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.basic_spritesheet);
-        backgroundImage = BitmapFactory.decodeResource(getResources(), R.drawable.grass_tiles);
 
         frameWidth = spriteSheet.getWidth() / 4;
         frameHeight = spriteSheet.getHeight() / 4;
@@ -84,8 +88,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    }
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
 
     private class DrawThread extends Thread {
         private boolean running = false;
@@ -112,8 +115,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 try {
                     sleep(16);
-                } catch (InterruptedException ignored) {
-                }
+                } catch (InterruptedException ignored) {}
             }
         }
     }
@@ -157,7 +159,6 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             frameIndex = 0;
         }
 
-        // 중심 위치 계산
         float centerX = viewWidth / 2f;
         float centerY = viewHeight / 2f;
 
@@ -169,7 +170,6 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         int bgRight = bgLeft + viewWidth;
         int bgBottom = bgTop + viewHeight;
 
-        // 배경 범위 초과 방지
         if (bgLeft < 0) {
             bgRight += -bgLeft;
             bgLeft = 0;
@@ -196,13 +196,11 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         Rect bgDst = new Rect(0, 0, viewWidth, viewHeight);
         canvas.drawBitmap(backgroundImage, bgSrc, bgDst, null);
 
-        // 스프라이트 자르기
         srcRect.left = frameIndex * frameWidth;
         srcRect.top = frameRow * frameHeight;
         srcRect.right = srcRect.left + frameWidth;
         srcRect.bottom = srcRect.top + frameHeight;
 
-        // 캐릭터 화면 중심
         int size = frameWidth * 2;
         dstRect.left = (int) (centerX - size / 2f);
         dstRect.top = (int) (centerY - size / 2f);
@@ -267,6 +265,13 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         currentX = targetX = defaultX;
         currentY = targetY = defaultY;
         spritePrefs.edit().remove("lastX").remove("lastY").apply();
+    }
+
+    public void reloadBackground() {
+        String userId = getUserId();
+        String bgKey = (userId != null) ? "selectedBackground_" + userId : "selectedBackground";
+        int bgResId = spritePrefs.getInt(bgKey, R.drawable.grass_tiles);
+        backgroundImage = BitmapFactory.decodeResource(getResources(), bgResId);
     }
 
     private String getUserId() {

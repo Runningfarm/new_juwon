@@ -3,6 +3,7 @@ package kr.ac.hs.farm;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
@@ -63,26 +64,38 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         }
 
         holder.imageView.setOnClickListener(v -> {
-            if (item.category.equals("농장") || item.category.equals("울타리") || item.category.equals("가구") || item.category.equals("작물")) {
-                if (!item.obtained) {
-                    Toast.makeText(context, "아직 획득하지 않은 아이템입니다.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (!item.obtained) {
+                Toast.makeText(context, "아직 획득하지 않은 아이템입니다.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                new AlertDialog.Builder(context)
-                        .setTitle("아이템 적용")
-                        .setMessage("이 아이템을 적용하시겠습니까?")
-                        .setPositiveButton("네", (dialog, which) -> {
+            new AlertDialog.Builder(context)
+                    .setTitle("아이템 적용")
+                    .setMessage("이 아이템을 적용하시겠습니까?")
+                    .setPositiveButton("네", (dialog, which) -> {
+                        if (item.category.equals("배경")) {
+                            SharedPreferences loginPrefs = context.getSharedPreferences("login", Context.MODE_PRIVATE);
+                            boolean isLoggedIn = loginPrefs.getBoolean("isLoggedIn", false);
+                            String userId = isLoggedIn ? loginPrefs.getString("id", null) : null;
+
+                            String bgKey = userId != null ? "selectedBackground_" + userId : "selectedBackground_default";
+
+                            SharedPreferences prefs = context.getSharedPreferences("SpritePrefs", Context.MODE_PRIVATE);
+                            prefs.edit().putInt(bgKey, item.imageRes).apply();
+
+                            Toast.makeText(context, "배경이 변경되었습니다!", Toast.LENGTH_SHORT).show();
+                            context.startActivity(new Intent(context, MainActivity.class));
+                        } else {
                             Toast.makeText(context, "적용되었습니다!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.putExtra("appliedItemImageRes", item.imageRes);
                             context.startActivity(intent);
-                        })
-                        .setNegativeButton("아니오", (dialog, which) -> {
-                            Toast.makeText(context, "취소되었습니다.", Toast.LENGTH_SHORT).show();
-                        })
-                        .show();
-            }
+                        }
+                    })
+                    .setNegativeButton("아니오", (dialog, which) -> {
+                        Toast.makeText(context, "취소되었습니다.", Toast.LENGTH_SHORT).show();
+                    })
+                    .show();
         });
     }
 
