@@ -354,3 +354,30 @@ progressbar_green.xml
 ```
 
 -> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
+
+# <7/26 수정사항>
+1. 퀘스트 화면 (TAB3) UI 수정
+2. RunningResult 화면 배경 색 수정
+
+- 수정한 파일
+```
+activity_tab3.xml
+activity_runningresult.xml
+Tab3Activity.java
+```
+
+- 추가한 파일
+
+1. app/src/main/res/drawable/에 추가
+```
+box_locked.xml
+box_opened.xml
+progress_green_custom.xml
+```
+
+2. app/src/main/res/anim/에 추가
+```
+fade_open.xml
+```
+
+-> RetrofitClient에 설정된 IP는 제 환경에 맞춘 거라 수정할 필요 없습니다.
