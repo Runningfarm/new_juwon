@@ -287,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("appliedItemImageRes")) {
             int resId = intent.getIntExtra("appliedItemImageRes", 0);
             if (resId != 0) {
-                addItemToFarmArea(resId, 300f, 100f, 200, 200, 0f);
+                addItemToFarmArea(resId, 300f, 100f, 150, 150, 0f);
                 saveAppliedItems();
                 setEditMode(true);
             }

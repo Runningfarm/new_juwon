@@ -60,38 +60,56 @@
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_crop"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="농작물"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_collect"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="채집"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_decor"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="장식물"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_picnic"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="피크닉"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_structure"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="구조물"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/chip_fence"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="울타리"
-                android:textColor="#5D7755"
-                app:chipBackgroundColor="@color/chip_selector" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_crop"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="작물"
-                android:textColor="#5D7755"
-                app:chipBackgroundColor="@color/chip_selector" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_furniture"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="가구"
-                android:textColor="#5D7755"
-                app:chipBackgroundColor="@color/chip_selector" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_background"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="배경"
                 android:textColor="#5D7755"
                 app:chipBackgroundColor="@color/chip_selector" />
 
@@ -110,7 +128,7 @@
             android:scrollbars="vertical" />
     </LinearLayout>
 
-    <!-- 하단 탭바 (기존 유지) -->
+    <!-- 하단 탭바 -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
@@ -126,13 +144,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- 탭 버튼들 -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
-
             <ImageButton
                 android:id="@+id/tab1Button"
                 android:layout_width="40dp"
@@ -149,7 +167,6 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
-
             <ImageButton
                 android:id="@+id/tab2Button"
                 android:layout_width="40dp"
@@ -166,7 +183,6 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
-
             <ImageButton
                 android:id="@+id/tab3Button"
                 android:layout_width="40dp"
@@ -183,7 +199,6 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
-
             <ImageButton
                 android:id="@+id/tab4Button"
                 android:layout_width="40dp"
@@ -200,7 +215,6 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
-
             <ImageButton
                 android:id="@+id/tab6Button"
                 android:layout_width="40dp"
