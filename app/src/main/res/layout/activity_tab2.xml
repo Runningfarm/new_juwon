@@ -54,7 +54,7 @@
                     style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="8dp"
-                    android:progress="60"
+                    android:progress="00"
                     android:max="100"
                     android:progressDrawable="@drawable/progressbar_green"
                     android:layout_marginTop="4dp"
@@ -65,7 +65,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:text="3 / 5 완료"
+                    android:text="0 / 5 완료"
                     android:textSize="12sp"
                     android:textColor="#777777"
                     android:fontFamily="@font/nanumgothic_regular" />

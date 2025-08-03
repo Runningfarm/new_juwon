@@ -104,7 +104,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -182,7 +182,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -259,7 +259,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -335,7 +335,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -412,7 +412,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -489,7 +489,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -566,7 +566,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -643,7 +643,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
@@ -720,7 +720,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="12dp"
                                         android:max="100"
-                                        android:progress="30"
+                                        android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
                                     <ImageView
