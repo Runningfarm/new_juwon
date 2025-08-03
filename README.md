@@ -511,3 +511,105 @@ chip_selector.xml
 +) 전부 추가했는데도 오류가 발생하면 .idea/modules.xml 파일이 있는지 확인 후에 만약 없다면 modules.xml을 추가
 
 +) RetrofitClient에 설정된 IP는 본인 환경에 맞게 설정
+
+## <8/3 수정사항>
+>>> 변경된 내용이 많으니, 확인하실 때 조금만 더 신경 써주시면 감사하겠습니다!
+
+
+인벤토리 농장 아이템 추가 (농작물16개, 채집25개, 장식물18개, 피크닉2개, 구조물3개, 울타리16개)
+
+<기존 수정 파일>
+```
+activity_tab4.xml
+Item.java
+ItemAdapter.java
+MainActivity.java
+Tab4Activity.java
+```
+
+<삭제된 파일>
+```
+allcarpet.png
+bed1.png
+bed2.png
+bed3.png
+carpet1.png
+carpet2.png
+carpet3.png
+frameimg1.png
+frameimg2.png
+frameimg3.png
+nightstand.png
+blueberry.png
+cabbage.png
+circle.png
+corn.png
+flower.png
+pea.png
+potato.png
+pumkin.png
+purple.png
+radish.png
+red.png
+rice1.png
+rice2.png
+sprout.png
+starfruit.png
+tulip.png
+tile000.png ~ tile031.png
+```
+
+<새로운 추가 파일>
+```
+boat.png
+mailbox.png
+wheat.png
+potato.png
+cauliflower.png
+beet.png
+egg_plant.png
+cabbage.png
+corn.png
+pumpkin.png
+radish.png
+blueberry.png
+starfruit.png
+pea.png
+red_mushroom.png
+red_spotted_mushroom.png
+purple_mushroom.png
+purple_spotted_mushroom.png
+basket.png
+blanket.png
+fence1.png ~ fence16.png
+lotus.png
+lilac.png
+sunflower.png
+blue_tulip.png
+sky_blue_flower.png
+blue_flower.png
+beige_flower.png
+heart_flower.png
+small_bush.png
+big_bush.png
+long_wooden_path.png
+wide_wooden_path.png
+small_stone_path.png
+long_stone_path.png
+wide_stone_path.png
+sign.png
+left_diagonal_sign.png
+right_diagonal_sign.png
+stone1.png ~ stone6.png
+rock1.png
+rock2.png
+grass1.png ~ grass4.png
+thin_tree.png
+basic_tree.png
+wide_tree.png
+small_stump.png
+basic_stump.png
+big_stump.png
+small_fallen_tree.png
+big_fallen_tree.png
+```
