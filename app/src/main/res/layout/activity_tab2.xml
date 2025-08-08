@@ -53,19 +53,19 @@
                     android:id="@+id/quest_progress_bar"
                     style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:progress="00"
-                    android:max="100"
-                    android:progressDrawable="@drawable/progressbar_green"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:layout_marginBottom="2dp" />
+                    android:layout_marginBottom="2dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/progressbar_green" />
 
                 <TextView
                     android:id="@+id/quest_progress_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:text="0 / 5 완료"
+                    android:text=""
                     android:textSize="12sp"
                     android:textColor="#777777"
                     android:fontFamily="@font/nanumgothic_regular" />

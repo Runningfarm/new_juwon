@@ -46,6 +46,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import kr.ac.hs.farm.LandmarkManager;
+import kr.ac.hs.farm.Landmark;
+
 public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallback {
 
     private ImageButton playButton, pauseButton, endButton;
@@ -66,9 +69,14 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
     private Location lastLocation = null;
     private float weight = 0f;
 
+    private LandmarkManager landmarkManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        landmarkManager = new LandmarkManager(this);
+
         setContentView(R.layout.activity_tab2);
 
         View rootView = findViewById(R.id.root_running);
@@ -77,6 +85,9 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
             v.setPadding(0, systemInsets.top, 0, systemInsets.bottom);
             return insets;
         });
+
+        SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
+        weight = pref.getFloat("weight", 0f);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -215,7 +226,8 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
         if (id == null) return;
 
         ApiService api = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-        Call<QuestProgressResponse> call = api.getQuestProgress(id);
+        String token = pref.getString("token", null); // 7/30
+        Call<QuestProgressResponse> call = api.getQuestProgress("Bearer " + token); // 7/30
         call.enqueue(new Callback<QuestProgressResponse>() {
             @Override
             public void onResponse(Call<QuestProgressResponse> call, Response<QuestProgressResponse> response) {
@@ -245,6 +257,8 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
+
+        landmarkManager.drawLandmarksOnMap(googleMap);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);

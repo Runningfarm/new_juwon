@@ -27,8 +27,8 @@ import android.view.View;
 public class Tab3Activity extends AppCompatActivity {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private ProgressBar[] progressBars = new ProgressBar[9];
-    private Button[] claimButtons = new Button[9];
+    private ProgressBar[] progressBars = new ProgressBar[13];
+    private Button[] claimButtons = new Button[13];
     private ImageView imagePreview;
 
     @Override
@@ -53,6 +53,10 @@ public class Tab3Activity extends AppCompatActivity {
         progressBars[6] = findViewById(R.id.progressQuest7);
         progressBars[7] = findViewById(R.id.progressQuest8);
         progressBars[8] = findViewById(R.id.progressQuest9);
+        progressBars[9] = findViewById(R.id.progressQuest10);
+        progressBars[10] = findViewById(R.id.progressQuest11);
+        progressBars[11] = findViewById(R.id.progressQuest12);
+        progressBars[12] = findViewById(R.id.progressQuest13);
 
         claimButtons[0] = findViewById(R.id.btnClaim1);
         claimButtons[1] = findViewById(R.id.btnClaim2);
@@ -63,6 +67,10 @@ public class Tab3Activity extends AppCompatActivity {
         claimButtons[6] = findViewById(R.id.btnClaim7);
         claimButtons[7] = findViewById(R.id.btnClaim8);
         claimButtons[8] = findViewById(R.id.btnClaim9);
+        claimButtons[9] = findViewById(R.id.btnClaim10);
+        claimButtons[10] = findViewById(R.id.btnClaim11);
+        claimButtons[11] = findViewById(R.id.btnClaim12);
+        claimButtons[12] = findViewById(R.id.btnClaim13);
 
         imagePreview = findViewById(R.id.imagePreview);
         Button buttonTakePhoto = findViewById(R.id.buttonTakePhoto);
@@ -155,7 +163,7 @@ public class Tab3Activity extends AppCompatActivity {
                         Toast.makeText(Tab3Activity.this, "보상을 받을 수 없는 상태입니다.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(Tab3Activity.this, "퀘스트 보상 요청 실패", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Tab3Activity.this, "퀘스트 중복 보상 받기 불가", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -167,7 +175,7 @@ public class Tab3Activity extends AppCompatActivity {
     }
 
     private void updateQuestUI(List<QuestProgressResponse.Quest> quests) {
-        for (int i = 0; i < Math.min(quests.size(), 9); i++) {
+        for (int i = 0; i < Math.min(quests.size(), 13); i++) {
             QuestProgressResponse.Quest q = quests.get(i);
             double target = q.getTarget();
             int percent = (target > 0) ? (int) ((q.getProgress() / target) * 100) : 0;
