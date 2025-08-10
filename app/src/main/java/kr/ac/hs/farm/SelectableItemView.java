@@ -49,6 +49,7 @@ public class SelectableItemView extends FrameLayout {
     private void init(Context context) {
         itemImage = new ImageView(context);
         itemImage.setImageResource(resId);
+        itemImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
         LayoutParams imgParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         itemImage.setLayoutParams(imgParams);
         addView(itemImage);
@@ -101,7 +102,7 @@ public class SelectableItemView extends FrameLayout {
         setFocusable(false);
     }
 
-    // ★ 수정: 버튼 크기 자동 조정
+    // ★ 버튼 크기 자동 조정
     private void updateButtonSizes() {
         int itemSize = Math.min(getWidth(), getHeight());
         int buttonSize = Math.max(30, itemSize / 4);  // 최소 30
@@ -139,13 +140,13 @@ public class SelectableItemView extends FrameLayout {
         setSize(newWidth, newHeight);
     }
 
-    // ★ 수정: 크기 변경 시 버튼 크기 반영
+    // ★ 크기 변경 시 버튼 크기 반영
     private void setSize(int width, int height) {
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
         params.width = width;
         params.height = height;
         setLayoutParams(params);
-        updateButtonSizes(); // 버튼 크기 재조정
+        updateButtonSizes();
     }
 
     public int getResId() {
@@ -166,7 +167,7 @@ public class SelectableItemView extends FrameLayout {
         rotateButton.setVisibility(View.VISIBLE);
         sizeIncreaseButton.setVisibility(View.VISIBLE);
         sizeDecreaseButton.setVisibility(View.VISIBLE);
-        updateButtonSizes(); // ★ 수정: 보여줄 때도 크기 조정
+        updateButtonSizes();
     }
 
     public void setEditEnabled(boolean enabled) {
@@ -219,4 +220,26 @@ public class SelectableItemView extends FrameLayout {
             return true;
         }
     };
+
+    // ====== ★★★ 스프라이트/외부 컨트롤용 공개 메서드 추가 ★★★ ======
+
+    /** 내부 기본 이미지(ImageView)에 드로어블을 직접 세팅 */
+    public void setItemImageDrawable(android.graphics.drawable.Drawable d) {
+        itemImage.setImageDrawable(d);
+    }
+
+    /** 내부 기본 이미지 숨김/표시 */
+    public void setItemImageVisible(boolean visible) {
+        itemImage.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    /** 내부 기본 이미지 제거(널) */
+    public void clearItemImage() {
+        itemImage.setImageDrawable(null);
+    }
+
+    /** 내부 기본 ImageView를 반환(필요 시) */
+    public ImageView getItemImageView() {
+        return itemImage;
+    }
 }

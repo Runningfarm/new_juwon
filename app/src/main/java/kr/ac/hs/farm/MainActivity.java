@@ -133,16 +133,13 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
 
-                        // 인테리어 아이템 초기화
                         prefs.edit().remove(getItemKey()).apply();
 
-                        // 배경도 grass_tiles로 초기화
                         SharedPreferences spritePrefs = getSharedPreferences("SpritePrefs", MODE_PRIVATE);
                         String userId = getCurrentUserId();
                         String bgKey = userId != null ? "selectedBackground_" + userId : "selectedBackground";
                         spritePrefs.edit().putInt(bgKey, R.drawable.grass_tiles).apply();
 
-                        // 반영
                         spriteView.reloadBackground();
                         spriteView.resetPositionToCenter();
 
@@ -157,6 +154,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (spriteView != null) spriteView.saveCharacterPosition();
+
+        // 애니메이션/이동 일시정지
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View child = farmArea.getChildAt(i);
+            if (child instanceof SelectableSpriteItemView) {
+                ((SelectableSpriteItemView) child).stopAnim();
+                ((SelectableSpriteItemView) child).disableWander();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 애니메이션/이동 재개 (편집 모드가 아닐 때만 wander)
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View child = farmArea.getChildAt(i);
+            if (child instanceof SelectableSpriteItemView) {
+                ((SelectableSpriteItemView) child).startAnim();
+                if (!isEditMode) {
+                    ((SelectableSpriteItemView) child).enableWander(farmArea);
+                }
+            }
+        }
     }
 
     private String getCurrentUserId() {
@@ -239,7 +260,12 @@ public class MainActivity extends AppCompatActivity {
                 int width = obj.getInt("width");
                 int height = obj.getInt("height");
                 float rotation = (float) obj.optDouble("rotation", 0);
-                addItemToFarmArea(resId, x, y, width, height, rotation);
+
+                if (isAnimalRes(resId)) {
+                    addAnimalToFarmArea(resId, x, y, width, height, rotation);
+                } else {
+                    addItemToFarmArea(resId, x, y, width, height, rotation);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -287,13 +313,18 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("appliedItemImageRes")) {
             int resId = intent.getIntExtra("appliedItemImageRes", 0);
             if (resId != 0) {
-                addItemToFarmArea(resId, 300f, 100f, 150, 150, 0f);
+                if (isAnimalRes(resId)) {
+                    addAnimalToFarmArea(resId, 300f, 100f, 150, 150, 0f);
+                } else {
+                    addItemToFarmArea(resId, 300f, 100f, 150, 150, 0f);
+                }
                 saveAppliedItems();
                 setEditMode(true);
             }
         }
     }
 
+    // 정적 아이템
     private void addItemToFarmArea(int resId, float x, float y, int width, int height, float rotation) {
         SelectableItemView itemView = new SelectableItemView(this, resId);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
@@ -308,6 +339,180 @@ public class MainActivity extends AppCompatActivity {
         farmArea.addView(itemView);
     }
 
+    // 동물(스프라이트 + wander + 걷기/대기 분리 + 빈 프레임 & Idle 마스크 반영)
+    private void addAnimalToFarmArea(int resId, float x, float y, int width, int height, float rotation) {
+        SelectableSpriteItemView itemView = new SelectableSpriteItemView(this, resId);
+
+        String entryName = safeEntryName(resId);
+        if ("chicken".equals(entryName)) {
+            // 치킨: 13행 x 8열, Idle = 11~12행(1-based) -> 0-based {10,11}
+            int rows = 13, cols = 8;
+            int[] idleRows = new int[]{10, 11};
+
+            // 빈 칸(1-based) 정의 (이전과 동일)
+            int[][] exclude = new int[rows][];
+            exclude[0]  = new int[]{5,6,7,8}; // 1행
+            exclude[1]  = new int[]{8};       // 2행
+            exclude[2]  = new int[]{};        // 3행
+            exclude[3]  = new int[]{8};       // 4행
+            exclude[4]  = new int[]{8};       // 5행
+            exclude[5]  = new int[]{8};       // 6행
+            exclude[6]  = new int[]{8};       // 7행
+            exclude[7]  = new int[]{6,7,8};   // 8행
+            exclude[8]  = new int[]{5,6,7,8}; // 9행
+            exclude[9]  = new int[]{6,7,8};   // 10행
+            exclude[10] = new int[]{5,6,7,8}; // 11행 (idle)
+            exclude[11] = new int[]{7,8};     // 12행 (idle)
+            exclude[12] = new int[]{3,4,5,6,7,8}; // 13행
+
+            boolean[][] baseMask = makeIncludeMask(rows, cols, exclude);
+
+            // idle = 11~12행 전체 (baseMask로 한번 더 필터)
+            boolean[][] idleMask = filterRows(baseMask, rows, cols, idleRows);
+
+            // walk = base - idle
+            boolean[][] walkMask = subtractMasks(baseMask, idleMask);
+
+            itemView.applyDualSpriteWithMasks(
+                    R.drawable.chicken_sprites, // 파일명 맞춰주세요
+                    rows, cols,
+                    /*fpsWalk*/ 8, /*fpsIdle*/ 6,
+                    walkMask, idleMask
+            );
+
+        } else if ("cow".equals(entryName)) {
+            // 소: 7행 x 8열
+            // Idle 지정 (1-based):
+            //  - 3행 2열, 4열
+            //  - 4행 전체
+            //  - 5행 전체
+            //  - 7행 전체
+            int rows = 7, cols = 8;
+
+            // 빈 칸(1-based) 정의 (이전과 동일)
+            int[][] exclude = new int[rows][];
+            exclude[0] = new int[]{4,5,6,7,8}; // 1행
+            exclude[1] = new int[]{};          // 2행
+            exclude[2] = new int[]{8};         // 3행
+            exclude[3] = new int[]{4,5,6,7,8}; // 4행
+            exclude[4] = new int[]{5,6,7,8};   // 5행
+            exclude[5] = new int[]{8};         // 6행
+            exclude[6] = new int[]{5,6,7,8};   // 7행
+
+            boolean[][] baseMask = makeIncludeMask(rows, cols, exclude);
+
+            // idleMask를 '특정 칸'과 '특정 행 전체'로 구성 (baseMask true인 프레임만 허용)
+            boolean[][] idleMask = new boolean[rows][cols];
+
+            // 3행 2열, 4열 (1-based) -> (row=2, col=1,3)
+            int r3 = 2;
+            int[] r3cols = new int[]{1, 3};
+            for (int c1 : r3cols) {
+                int c = c1 - 1;
+                if (c >= 0 && c < cols && baseMask[r3][c]) idleMask[r3][c] = true;
+            }
+
+            // 4행 전체 (row=3)
+            int r4 = 3;
+            for (int c = 0; c < cols; c++) if (baseMask[r4][c]) idleMask[r4][c] = true;
+
+            // 5행 전체 (row=4)
+            int r5 = 4;
+            for (int c = 0; c < cols; c++) if (baseMask[r5][c]) idleMask[r5][c] = true;
+
+            // 7행 전체 (row=6)
+            int r7 = 6;
+            for (int c = 0; c < cols; c++) if (baseMask[r7][c]) idleMask[r7][c] = true;
+
+            // walk = base - idle
+            boolean[][] walkMask = subtractMasks(baseMask, idleMask);
+
+            itemView.applyDualSpriteWithMasks(
+                    R.drawable.cow_sprites, // 파일명 맞춰주세요
+                    rows, cols,
+                    /*fpsWalk*/ 8, /*fpsIdle*/ 6,
+                    walkMask, idleMask
+            );
+
+        } else {
+            addItemToFarmArea(resId, x, y, width, height, rotation);
+            return;
+        }
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+        itemView.setLayoutParams(params);
+        itemView.setX(x);
+        itemView.setY(y);
+        itemView.setRotation(rotation);
+        itemView.setOnDoubleTapListener(() -> showDeleteConfirmDialog(itemView));
+        itemView.setEditEnabled(isEditMode);
+        if (isEditMode) itemView.showBorderAndButtons();
+        else itemView.hideBorderAndButtons();
+        farmArea.addView(itemView);
+
+        if (!isEditMode) {
+            itemView.enableWander(farmArea);
+            itemView.setWanderSpeed(15f); // 필요시 더 낮추면 더 천천히
+        }
+    }
+
+    // ====== 마스크 유틸들 ======
+    private static boolean[][] makeIncludeMask(int rows, int cols, int[][] excludedCols1Based) {
+        boolean[][] mask = new boolean[rows][cols];
+        // 기본 true
+        for (int r=0;r<rows;r++) for (int c=0;c<cols;c++) mask[r][c]=true;
+        // 제외 칸을 false
+        if (excludedCols1Based != null) {
+            for (int r=0;r<rows;r++) {
+                int[] ex = excludedCols1Based[r];
+                if (ex == null) continue;
+                for (int col1 : ex) {
+                    int c = col1 - 1;
+                    if (c>=0 && c<cols) mask[r][c] = false;
+                }
+            }
+        }
+        return mask;
+    }
+    private static boolean[][] filterRows(boolean[][] baseMask, int rows, int cols, int[] keepRows) {
+        boolean[] keep = new boolean[rows];
+        for (int r : keepRows) if (r>=0 && r<rows) keep[r]=true;
+        boolean[][] out = new boolean[rows][cols];
+        for (int r=0;r<rows;r++) if (keep[r]) for (int c=0;c<cols;c++) out[r][c]=baseMask[r][c];
+        return out;
+    }
+    private static int[] invert(int rows, int[] src) {
+        boolean[] ex = new boolean[rows];
+        for (int r : src) if (r>=0 && r<rows) ex[r]=true;
+        int cnt=0; for (int r=0;r<rows;r++) if (!ex[r]) cnt++;
+        int[] out = new int[cnt];
+        for (int r=0,i=0;r<rows;r++) if (!ex[r]) out[i++]=r;
+        return out;
+    }
+    // baseMask에서 idleMask를 빼서 walkMask 생성
+    private static boolean[][] subtractMasks(boolean[][] baseMask, boolean[][] idleMask) {
+        int rows = baseMask.length;
+        int cols = baseMask[0].length;
+        boolean[][] out = new boolean[rows][cols];
+        for (int r=0;r<rows;r++) for (int c=0;c<cols;c++) {
+            out[r][c] = baseMask[r][c] && !(idleMask != null && idleMask[r][c]);
+        }
+        return out;
+    }
+
+    private boolean isAnimalRes(int resId) {
+        String name = safeEntryName(resId);
+        return "chicken".equals(name) || "cow".equals(name);
+    }
+
+    private String safeEntryName(int resId) {
+        try {
+            return getResources().getResourceEntryName(resId);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     private void setEditMode(boolean enabled) {
         isEditMode = enabled;
         for (int i = 0; i < farmArea.getChildCount(); i++) {
@@ -317,6 +522,10 @@ public class MainActivity extends AppCompatActivity {
                 itemView.setEditEnabled(enabled);
                 if (enabled) itemView.showBorderAndButtons();
                 else itemView.hideBorderAndButtons();
+            }
+            if (child instanceof SelectableSpriteItemView) {
+                if (enabled) ((SelectableSpriteItemView) child).disableWander();
+                else ((SelectableSpriteItemView) child).enableWander(farmArea);
             }
         }
     }
