@@ -613,3 +613,60 @@ big_stump.png
 small_fallen_tree.png
 big_fallen_tree.png
 ```
+-> app/src/main/res/drawable/에 각 png 추가
+
+## <8/10 수정사항>
+>>> 변경된 내용이 많으니, 확인하실 때 조금만 더 신경 써주시면 감사하겠습니다!
+
+1. 인벤토리 목장 아이템 추가
+2. 닭 / 소 아이템을 메인화면에 추가했을 시에 애니메이션 적용됨
+
+<기존 수정 파일>
+```
+activity_tab4.xml
+MainActivity.java
+SelectableItemView.java
+Tab4Activity.java
+```
+
+<새로운 추가 파일>
+```
+SelectableSpriteItemView.java
+SpriteAnimUtil.java
+```
+
+-> 아래는 모두 app/src/main/res/drawable/에 추가
+
+```
+top_left_wall.png
+top_center_wall.png
+top_right_wall.png
+bottom_left_wall.png
+bottom_center_wall.png
+bottom_right_wall.png
+center_wall.png
+wide_top_left_wall.png
+wide_top_right_wall.png
+wide_bottom_left_wall.png
+wide_bottom_right_wall.png
+hole_wall.png
+floor.png
+chicken_house.png
+chest.png
+chicken.png
+cow.png
+straw.png
+big_straw.png
+haystack.png
+big_haystack.png
+basket_one.png
+basket_two.png
+water_tray.png
+empty_water_tray.png
+chicken_sprites.png
+cow_sprites.png
+```
+
+
+
+
