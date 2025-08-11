@@ -667,6 +667,70 @@ chicken_sprites.png
 cow_sprites.png
 ```
 
+## <8/11 수정사항>
+
+개인정보 화면에 총 누적 달리기 시간 UI 추가
+
+<수정 파일>
+```
+activity_edit_profile.xml
+```
+
+```
+<!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:src="@drawable/ic_back_cute"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="뒤로가기"
+            android:padding="6dp"
+            android:layout_gravity="start"
+            android:layout_marginBottom="25dp" />
+```
+-> 여기 아래에
+
+
+```
+<!-- [신규] 총 누적 달리기 시간 카드 -->
+        <LinearLayout
+            android:id="@+id/totalTimeCardProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#EAF6E9"
+            android:padding="16dp"
+            android:elevation="2dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="4dp"
+            android:backgroundTint="#EAF6E9">
+
+            <TextView
+                android:id="@+id/tvTotalLabelProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="총 누적 달리기 시간"
+                android:textColor="#5D7755"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/nanumgothic_regular" />
+
+            <TextView
+                android:id="@+id/tvTotalRunTimeProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="0시간 00분"
+                android:textColor="#347EBF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/nanumgothic_regular" />
+        </LinearLayout>
+```
+-> 이 코드를 추가함
 
 
 
