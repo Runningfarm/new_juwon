@@ -58,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="0시간 00분"
+                android:text="00:00:00"
                 android:textColor="#347EBF"
                 android:textSize="22sp"
                 android:textStyle="bold"
