@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,6 +20,8 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private EditText editName, editEmail, editWeight, editPassword;
     private Button buttonUpdate;
+
+    private TextView tvTotalRunTimeProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +43,15 @@ public class EditProfileActivity extends AppCompatActivity {
         editWeight = findViewById(R.id.editWeight);
         editPassword = findViewById(R.id.editPassword);
         buttonUpdate = findViewById(R.id.buttonUpdate);
+        tvTotalRunTimeProfile = findViewById(R.id.tvTotalRunTimeProfile);
 
         // ▼ 저장된 로그인 정보 불러오기
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
         String id = pref.getString("id", "");
         String name = pref.getString("name", "");
         float weight = pref.getFloat("weight", 0f);
+        long totalRunSecs = pref.getLong("total_run_time_seconds", 0L);
+        tvTotalRunTimeProfile.setText(formatSecondsToHMS(totalRunSecs));
 
         // ▼ 초기값 설정
         editEmail.setText(id);
@@ -104,5 +110,12 @@ public class EditProfileActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    private String formatSecondsToHMS(long seconds) {
+        long h = seconds / 3600;
+        long m = (seconds % 3600) / 60;
+        long s = seconds % 60;
+        return String.format("%02d:%02d:%02d", h, m, s);
     }
 }

@@ -7,6 +7,8 @@ public class LoginResponse {
     private float weight;
     private String name;
 
+    private long totalRunTime;
+
     public boolean isSuccess() {
         return success;
     }
@@ -26,4 +28,9 @@ public class LoginResponse {
     public String getName() {
         return name;
     }
+
+    public long getTotalRunTime() {
+        return totalRunTime;
+    }
+
 }

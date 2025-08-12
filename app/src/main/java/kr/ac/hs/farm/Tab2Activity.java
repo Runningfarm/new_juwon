@@ -144,6 +144,9 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
                     .setPositiveButton("예", (dialog, which) -> {
                         pauseRunning();
                         stopRunning();
+                        long prev = pref.getLong("total_run_time_seconds", 0L);
+                        long add = elapsedTime / 1000L;   // 이번 러닝 소요 시간(초)
+                        pref.edit().putLong("total_run_time_seconds", prev + add).apply();
                         Log.d("러닝", "time=" + timeTextView.getText().toString());
                         Log.d("러닝", "distance=" + tvDistance.getText().toString());
                         Log.d("러닝", "kcal=" + tvKcal.getText().toString());
