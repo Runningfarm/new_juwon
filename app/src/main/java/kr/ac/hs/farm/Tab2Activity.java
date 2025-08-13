@@ -46,9 +46,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import kr.ac.hs.farm.LandmarkManager;
-import kr.ac.hs.farm.Landmark;
-
 public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallback {
 
     private ImageButton playButton, pauseButton, endButton;
@@ -69,14 +66,9 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
     private Location lastLocation = null;
     private float weight = 0f;
 
-    private LandmarkManager landmarkManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        landmarkManager = new LandmarkManager(this);
-
         setContentView(R.layout.activity_tab2);
 
         View rootView = findViewById(R.id.root_running);
@@ -144,9 +136,11 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
                     .setPositiveButton("예", (dialog, which) -> {
                         pauseRunning();
                         stopRunning();
+
                         long prev = pref.getLong("total_run_time_seconds", 0L);
                         long add = elapsedTime / 1000L;   // 이번 러닝 소요 시간(초)
                         pref.edit().putLong("total_run_time_seconds", prev + add).apply();
+
                         Log.d("러닝", "time=" + timeTextView.getText().toString());
                         Log.d("러닝", "distance=" + tvDistance.getText().toString());
                         Log.d("러닝", "kcal=" + tvKcal.getText().toString());
@@ -168,6 +162,10 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void sendRunResultToServer() {
+        // 앱 터짐 방지
+        if (polylineOptions == null) {
+            polylineOptions = new PolylineOptions();
+        }
         runPath = new ArrayList<>(polylineOptions.getPoints());
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
         String id = pref.getString("id", null);
@@ -260,8 +258,6 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-
-        landmarkManager.drawLandmarksOnMap(googleMap);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
