@@ -49,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
 
     private SpriteView spriteView;
 
+    // 카메라 오프셋(배경 소스 좌상단)
+    private int cameraLeft = 0;
+    private int cameraTop = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +90,13 @@ public class MainActivity extends AppCompatActivity {
         farmArea.addView(spriteView, 0);
         spriteView.setOnSpriteClickListener(this::toggleCharacterMenu);
 
+        // 카메라 변경 리스너: 카메라 오프셋 갱신 → 모든 아이템 화면좌표 재계산
+        spriteView.setOnCameraChangeListener((left, top) -> {
+            cameraLeft = left;
+            cameraTop = top;
+            applyCameraToAllItems();
+        });
+
         spriteView.checkAndResetPosition();
 
         characterButton.setOnClickListener(v -> toggleCharacterMenu());
@@ -107,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateUI();
-        restoreAppliedItems();
-        applyInventoryItem(intent);
+        restoreAppliedItems();     // 저장 복원 (월드→화면)
+        applyInventoryItem(intent);// 인벤토리에서 방금 적용한 항목 처리
 
         findViewById(R.id.editModeButton).setOnClickListener(v -> {
             setEditMode(true);
@@ -121,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("수정이 완료되었습니까?")
                     .setPositiveButton("네", (dialog, which) -> {
                         setEditMode(false);
-                        saveAppliedItems();
+                        saveAppliedItems(); // 월드 좌표로 저장
                         Toast.makeText(this, "수정이 완료되었습니다!", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("아니오", null)
@@ -140,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
 
-                        // 🔧 NPE 방지: key가 null일 수 있으니 체크
                         String key = getItemKey();
                         if (key != null) {
                             prefs.edit().remove(key).apply();
@@ -149,16 +159,22 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences spritePrefs = getSharedPreferences("SpritePrefs", MODE_PRIVATE);
                         String userId = getCurrentUserId();
                         String bgKey = userId != null ? "selectedBackground_" + userId : "selectedBackground";
-                        spritePrefs.edit().putInt(bgKey, R.drawable.grass_tiles).apply();
+                        spritePrefs.edit().putInt(bgKey, R.drawable.tiles_grass).apply();
 
                         spriteView.reloadBackground();
                         spriteView.resetPositionToCenter();
+
+                        // 배경 바뀐 뒤 월드 경계 재적용
+                        applyWorldBoundsToAnimals();
 
                         Toast.makeText(this, "인테리어가 모두 초기화되었습니다.", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("아니오", null)
                     .show();
         });
+
+        // 시작 시 한 번 월드 경계 세팅
+        applyWorldBoundsToAnimals();
     }
 
     @Override
@@ -166,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         if (spriteView != null) spriteView.saveCharacterPosition();
 
-        // 애니메이션/이동 일시정지
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (child instanceof SelectableSpriteItemView) {
@@ -179,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 애니메이션/이동 재개 (편집 모드가 아닐 때만 wander)
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (child instanceof SelectableSpriteItemView) {
@@ -189,6 +203,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        // 복귀 시 카메라 오프셋 다시 반영
+        applyCameraToAllItems();
+        // 월드 경계도 보장
+        applyWorldBoundsToAnimals();
     }
 
     private String getCurrentUserId() {
@@ -239,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt(KEY_FOOD_COUNT, foodCount);
         editor.putInt(KEY_LEVEL, level);
         editor.putInt(KEY_EXPERIENCE, experience);
-        saveAppliedItems();
+        saveAppliedItems(); // 월드 좌표 저장
         editor.apply();
     }
 
@@ -252,6 +270,11 @@ public class MainActivity extends AppCompatActivity {
     private void restoreAppliedItems() {
         String key = getItemKey();
         if (key == null) return;
+
+        // 현재 카메라 오프셋 즉시 계산(첫 프레임 전에도 일관)
+        int[] cam = spriteView != null ? spriteView.computeCurrentCameraLT() : new int[]{cameraLeft, cameraTop};
+        float camLeftNow = cam[0];
+        float camTopNow  = cam[1];
 
         String json = prefs.getString(key, "[]");
         try {
@@ -266,21 +289,34 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 int resId = obj.getInt("resId");
-                float x = (float) obj.getDouble("x");
-                float y = (float) obj.getDouble("y");
+
+                float worldX = (float) obj.optDouble("worldX", Float.NaN);
+                float worldY = (float) obj.optDouble("worldY", Float.NaN);
+                if (Float.isNaN(worldX) || Float.isNaN(worldY)) {
+                    // 구버전 저장본 호환: x/y는 화면좌표
+                    float screenX = (float) obj.getDouble("x");
+                    float screenY = (float) obj.getDouble("y");
+                    worldX = screenX + camLeftNow;
+                    worldY = screenY + camTopNow;
+                }
+
                 int width = obj.getInt("width");
                 int height = obj.getInt("height");
                 float rotation = (float) obj.optDouble("rotation", 0);
 
                 if (isAnimalRes(resId)) {
-                    addAnimalToFarmArea(resId, x, y, width, height, rotation);
+                    addAnimalToFarmAreaWorld(resId, worldX, worldY, width, height, rotation);
                 } else {
-                    addItemToFarmArea(resId, x, y, width, height, rotation);
+                    addItemToFarmAreaWorld(resId, worldX, worldY, width, height, rotation);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // 카메라/월드 반영
+        applyCameraToAllItems();
+        applyWorldBoundsToAnimals();
     }
 
     private void saveAppliedItems() {
@@ -295,6 +331,9 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     JSONObject obj = new JSONObject();
                     obj.put("resId", itemView.getResId());
+                    obj.put("worldX", itemView.getWorldX());
+                    obj.put("worldY", itemView.getWorldY());
+                    // 호환용 화면좌표도 함께 저장
                     obj.put("x", itemView.getX());
                     obj.put("y", itemView.getY());
                     obj.put("width", itemView.getWidth());
@@ -307,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        int bgResId = prefs.getInt("selectedBackground", R.drawable.grass_tiles);
+        int bgResId = prefs.getInt("selectedBackground", R.drawable.tiles_grass);
         JSONObject bgObj = new JSONObject();
         try {
             bgObj.put("resId", bgResId);
@@ -324,39 +363,62 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("appliedItemImageRes")) {
             int resId = intent.getIntExtra("appliedItemImageRes", 0);
             if (resId != 0) {
+                // 현재 카메라 오프셋 즉시 계산해서 월드좌표 산출
+                int[] cam = spriteView != null ? spriteView.computeCurrentCameraLT() : new int[]{cameraLeft, cameraTop};
+                float camLeftNow = cam[0];
+                float camTopNow  = cam[1];
+
+                float initialScreenX = 300f;
+                float initialScreenY = 100f;
+                float worldX = initialScreenX + camLeftNow;
+                float worldY = initialScreenY + camTopNow;
+
                 if (isAnimalRes(resId)) {
-                    addAnimalToFarmArea(resId, 300f, 100f, 150, 150, 0f);
+                    addAnimalToFarmAreaWorld(resId, worldX, worldY, 120, 120, 0f);
                 } else {
-                    addItemToFarmArea(resId, 300f, 100f, 150, 150, 0f);
+                    addItemToFarmAreaWorld(resId, worldX, worldY, 120, 120, 0f);
                 }
+
+                // 즉시 반영
+                applyCameraToAllItems();
+                applyWorldBoundsToAnimals();
+
                 saveAppliedItems();
                 setEditMode(true);
             }
         }
     }
 
-    // 정적 아이템
-    private void addItemToFarmArea(int resId, float x, float y, int width, int height, float rotation) {
+    // 정적 아이템(월드 좌표)
+    private void addItemToFarmAreaWorld(int resId, float worldX, float worldY, int width, int height, float rotation) {
         SelectableItemView itemView = new SelectableItemView(this, resId);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
         itemView.setLayoutParams(params);
-        itemView.setX(x);
-        itemView.setY(y);
         itemView.setRotation(rotation);
+
+        // 카메라/월드 초기화
+        itemView.setCameraOffset(cameraLeft, cameraTop);
+        itemView.setWorldPosition(worldX, worldY);
+
         itemView.setOnDoubleTapListener(() -> showDeleteConfirmDialog(itemView));
         itemView.setEditEnabled(isEditMode);
-        if (isEditMode) itemView.showBorderAndButtons();
-        else itemView.hideBorderAndButtons();
+        if (isEditMode) itemView.showBorderAndButtons(); else itemView.hideBorderAndButtons();
+
+        // 드래그 종료 시 월드 좌표 갱신
+        itemView.setOnDragEndListener(v -> {
+            v.setCameraOffset(cameraLeft, cameraTop);
+            v.updateWorldFromScreen();
+        });
+
         farmArea.addView(itemView);
     }
 
-    // 동물(스프라이트 + wander + 걷기/대기 분리 + 빈 프레임 & Idle 마스크 반영)
-    private void addAnimalToFarmArea(int resId, float x, float y, int width, int height, float rotation) {
+    // 동물(월드 좌표)
+    private void addAnimalToFarmAreaWorld(int resId, float worldX, float worldY, int width, int height, float rotation) {
         SelectableSpriteItemView itemView = new SelectableSpriteItemView(this, resId);
 
         String entryName = safeEntryName(resId);
         if ("chicken".equals(entryName)) {
-            // 치킨: 13행 x 8열, Idle = 11~12행(1-based) -> 0-based {10,11}
             int rows = 13, cols = 8;
             int[] idleRows = new int[]{10, 11};
 
@@ -381,8 +443,7 @@ public class MainActivity extends AppCompatActivity {
 
             itemView.applyDualSpriteWithMasks(
                     R.drawable.chicken_sprites,
-                    rows, cols,
-                    8, 6,
+                    rows, cols, 8, 6,
                     walkMask, idleMask
             );
 
@@ -418,21 +479,28 @@ public class MainActivity extends AppCompatActivity {
 
             itemView.applyDualSpriteWithMasks(
                     R.drawable.cow_sprites,
-                    rows, cols,
-                    8, 6,
+                    rows, cols, 8, 6,
                     walkMask, idleMask
             );
 
         } else {
-            addItemToFarmArea(resId, x, y, width, height, rotation);
+            addItemToFarmAreaWorld(resId, worldX, worldY, width, height, rotation);
             return;
         }
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
         itemView.setLayoutParams(params);
-        itemView.setX(x);
-        itemView.setY(y);
         itemView.setRotation(rotation);
+
+        // 카메라/월드 초기화
+        itemView.setCameraOffset(cameraLeft, cameraTop);
+        itemView.setWorldPosition(worldX, worldY);
+
+        // ★ 월드 전체 경계 설정 (배경 전체에서 돌아다니도록)
+        int worldW = spriteView.getWorldWidth();
+        int worldH = spriteView.getWorldHeight();
+        itemView.setWorldBounds(worldW, worldH);
+
         itemView.setOnDoubleTapListener(() -> showDeleteConfirmDialog(itemView));
         itemView.setEditEnabled(isEditMode);
         if (isEditMode) itemView.showBorderAndButtons();
@@ -443,9 +511,15 @@ public class MainActivity extends AppCompatActivity {
             itemView.enableWander(farmArea);
             itemView.setWanderSpeed(15f);
         }
+
+        // 드래그 종료 시 월드 좌표 갱신
+        itemView.setOnDragEndListener(v -> {
+            v.setCameraOffset(cameraLeft, cameraTop);
+            v.updateWorldFromScreen();
+        });
     }
 
-    // ====== 마스크 유틸들 ======
+    // ====== 마스크 유틸 ======
     private static boolean[][] makeIncludeMask(int rows, int cols, int[][] excludedCols1Based) {
         boolean[][] mask = new boolean[rows][cols];
         for (int r=0;r<rows;r++) for (int c=0;c<cols;c++) mask[r][c]=true;
@@ -535,5 +609,30 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("아니오", null)
                 .show();
+    }
+
+    // 카메라 오프셋이 바뀔 때 모든 아이템의 화면 좌표 다시 계산
+    private void applyCameraToAllItems() {
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View child = farmArea.getChildAt(i);
+            if (child instanceof SelectableItemView) {
+                SelectableItemView iv = (SelectableItemView) child;
+                iv.setCameraOffset(cameraLeft, cameraTop);
+                iv.applyScreenFromWorld();
+            }
+        }
+    }
+
+    // 배경(월드) 전체 크기를 모든 동물에게 전달
+    private void applyWorldBoundsToAnimals() {
+        if (spriteView == null) return;
+        int worldW = spriteView.getWorldWidth();
+        int worldH = spriteView.getWorldHeight();
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View child = farmArea.getChildAt(i);
+            if (child instanceof SelectableSpriteItemView) {
+                ((SelectableSpriteItemView) child).setWorldBounds(worldW, worldH);
+            }
+        }
     }
 }

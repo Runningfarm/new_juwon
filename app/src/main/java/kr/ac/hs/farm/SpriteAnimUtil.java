@@ -10,7 +10,6 @@ import androidx.annotation.DrawableRes;
 
 public class SpriteAnimUtil {
 
-    // 기존 전체/마스크 버전 유지
     public static AnimationDrawable buildFromSheet(Context ctx,
                                                    @DrawableRes int sheetRes,
                                                    int rows,
@@ -25,8 +24,18 @@ public class SpriteAnimUtil {
                                                    int cols,
                                                    int fps,
                                                    boolean[][] includeMask) {
-        Bitmap sheet = BitmapFactory.decodeResource(ctx.getResources(), sheetRes);
+        // 자동 스케일링 방지 + 명시적 포맷
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inScaled = false; // 밀도 스케일링 금지
+        opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        Bitmap sheet = BitmapFactory.decodeResource(ctx.getResources(), sheetRes, opts);
         if (sheet == null || rows <= 0 || cols <= 0) return null;
+
+        // 밀도 정보 제거(스케일 무시), mipmap/프리멀티 설정
+        sheet.setDensity(0); // DENSITY_NONE
+        sheet.setHasMipMap(false);
+        try { sheet.setPremultiplied(true); } catch (Throwable ignored) {}
 
         int frameW = sheet.getWidth() / cols;
         int frameH = sheet.getHeight() / rows;
@@ -42,6 +51,7 @@ public class SpriteAnimUtil {
                 }
                 Bitmap frame = Bitmap.createBitmap(sheet, c * frameW, r * frameH, frameW, frameH);
                 BitmapDrawable drawable = new BitmapDrawable(ctx.getResources(), frame);
+                // 픽셀아트 품질 설정
                 drawable.setAntiAlias(false);
                 drawable.setFilterBitmap(false);
                 drawable.setDither(false);
@@ -53,7 +63,6 @@ public class SpriteAnimUtil {
         return anim;
     }
 
-    // 행 선택(0-based)으로 프레임 구성
     public static AnimationDrawable buildFromRows(Context ctx,
                                                   @DrawableRes int sheetRes,
                                                   int rows,

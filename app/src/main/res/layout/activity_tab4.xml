@@ -115,7 +115,7 @@
                 app:chipBackgroundColor="@color/chip_selector" />
         </com.google.android.material.chip.ChipGroup>
 
-        <!-- 목장 카테고리 ChipGroup (신규) -->
+        <!-- 목장 카테고리 ChipGroup -->
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/ranchCategoryGroup"
             android:layout_width="match_parent"
@@ -158,6 +158,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="기타"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- 집 카테고리 ChipGroup (신규) -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/houseCategoryGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:padding="8dp"
+            android:layout_marginTop="4dp"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_furniture"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="가구"
+                android:textColor="#5D7755"
+                app:chipBackgroundColor="@color/chip_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_architecture"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="건축물"
                 android:textColor="#5D7755"
                 app:chipBackgroundColor="@color/chip_selector" />
         </com.google.android.material.chip.ChipGroup>

@@ -35,15 +35,29 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private SharedPreferences spritePrefs;
 
+    // 픽셀 스프라이트용 Paint (최근접 보간)
+    private final android.graphics.Paint spritePaint = new android.graphics.Paint();
+
+
     public interface OnSpriteClickListener {
         void onSpriteClick();
     }
-
     private OnSpriteClickListener onSpriteClickListener;
-
     public void setOnSpriteClickListener(OnSpriteClickListener listener) {
         this.onSpriteClickListener = listener;
     }
+
+    // ★ 카메라 변경 콜백
+    public interface OnCameraChangeListener {
+        void onCameraChanged(int left, int top);
+    }
+    private OnCameraChangeListener cameraChangeListener;
+    public void setOnCameraChangeListener(OnCameraChangeListener l) {
+        this.cameraChangeListener = l;
+    }
+
+    // 마지막 카메라 상태
+    private int lastBgLeft = -1, lastBgTop = -1;
 
     public SpriteView(Context context) {
         super(context);
@@ -55,19 +69,36 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         String userId = getUserId();
         String bgKey = (userId != null) ? "selectedBackground_" + userId : "selectedBackground";
 
-        int bgResId = spritePrefs.getInt(bgKey, R.drawable.grass_tiles);
+        int bgResId = spritePrefs.getInt(bgKey, R.drawable.tiles_grass);
         backgroundImage = BitmapFactory.decodeResource(getResources(), bgResId);
         if (backgroundImage == null) {
-            // 안전 폴백
-            backgroundImage = BitmapFactory.decodeResource(getResources(), R.drawable.grass_tiles);
+            backgroundImage = BitmapFactory.decodeResource(getResources(), R.drawable.tiles_grass);
         }
 
-        spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.basic_spritesheet);
+        android.graphics.BitmapFactory.Options sOpts = new android.graphics.BitmapFactory.Options();
+        sOpts.inScaled = false; // 밀도 자동 스케일링 금지
+        sOpts.inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888;
+
+        // 👇 밀도 스케일 완전 차단(있어도 되고 없어도 됨, 넣으면 더 안전)
+        sOpts.inDensity = 0;
+        sOpts.inTargetDensity = 0;
+
+        spriteSheet = android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.basic_spritesheet, sOpts);
         if (spriteSheet == null) {
-            // 스프라이트가 없더라도 그리기 루프가 죽지 않도록 1x1 비트맵 폴백
-            spriteSheet = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            // 폴백
+            spriteSheet = android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888);
             frameCount = 1;
+        } else {
+            // 밀도 정보 제거(스케일 무시) + mipmap/프리멀티 설정
+            spriteSheet.setDensity(0); // DENSITY_NONE
+            spriteSheet.setHasMipMap(false);
+            try { spriteSheet.setPremultiplied(true); } catch (Throwable ignored) {}
         }
+
+// 픽셀 렌더링용 Paint 설정
+        spritePaint.setFilterBitmap(false);  // 최근접 보간(블러 방지)
+        spritePaint.setAntiAlias(false);     // 안티앨리어싱 끔(픽셀 또렷)
+        spritePaint.setDither(false);        // 디더링 끔
 
         frameWidth = Math.max(1, spriteSheet.getWidth() / 4);
         frameHeight = Math.max(1, spriteSheet.getHeight() / 4);
@@ -109,10 +140,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private class DrawThread extends Thread {
         private volatile boolean running = false;
-
-        public void setRunning(boolean run) {
-            running = run;
-        }
+        public void setRunning(boolean run) { running = run; }
 
         @Override
         public void run() {
@@ -130,12 +158,9 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
                         }
                     }
                 } catch (Throwable ignored) {
-                    // 어떤 예외가 와도 루프가 끊기지 않게
                 } finally {
                     if (canvas != null) {
-                        try {
-                            holder.unlockCanvasAndPost(canvas);
-                        } catch (Throwable ignored) {}
+                        try { holder.unlockCanvasAndPost(canvas); } catch (Throwable ignored) {}
                     }
                 }
                 SystemClock.sleep(16);
@@ -145,7 +170,6 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void drawFrame(Canvas canvas) {
         if (backgroundImage == null || backgroundImage.getWidth() <= 0 || backgroundImage.getHeight() <= 0) {
-            // 배경이 없으면 그냥 화면 clear만
             canvas.drawColor(0xFFFFFFFF);
             return;
         }
@@ -220,9 +244,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         bgBottom = Math.min(backgroundImage.getHeight(), bgBottom);
 
         if (bgRight <= bgLeft || bgBottom <= bgTop) {
-            // 잘못된 소스 사각형 방지
-            bgLeft = 0;
-            bgTop = 0;
+            bgLeft = 0; bgTop = 0;
             bgRight = backgroundImage.getWidth();
             bgBottom = backgroundImage.getHeight();
         }
@@ -231,8 +253,21 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         Rect bgDst = new Rect(0, 0, viewWidth, viewHeight);
         canvas.drawBitmap(backgroundImage, bgSrc, bgDst, null);
 
+        // ★ 카메라 변경 알림 (final 캡처)
+        if (cameraChangeListener != null && (bgLeft != lastBgLeft || bgTop != lastBgTop)) {
+            lastBgLeft = bgLeft;
+            lastBgTop = bgTop;
+
+            final int camLeft = bgLeft;
+            final int camTop  = bgTop;
+
+            post(() -> {
+                OnCameraChangeListener l = cameraChangeListener;
+                if (l != null) l.onCameraChanged(camLeft, camTop);
+            });
+        }
+
         if (spriteSheet != null && spriteSheet.getWidth() > 0 && spriteSheet.getHeight() > 0) {
-            // 스프라이트
             int safeFrameW = Math.max(1, frameWidth);
             int safeFrameH = Math.max(1, frameHeight);
 
@@ -241,13 +276,13 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             srcRect.right = Math.min(srcRect.left + safeFrameW, spriteSheet.getWidth());
             srcRect.bottom = Math.min(srcRect.top + safeFrameH, spriteSheet.getHeight());
 
-            int size = safeFrameW * 2;
+            int size = safeFrameW * 6;
             dstRect.left = (int) (centerX - size / 2f);
             dstRect.top = (int) (centerY - size / 2f);
             dstRect.right = dstRect.left + size;
             dstRect.bottom = dstRect.top + size;
 
-            canvas.drawBitmap(spriteSheet, srcRect, dstRect, null);
+            canvas.drawBitmap(spriteSheet, srcRect, dstRect, spritePaint);
         }
     }
 
@@ -306,15 +341,24 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         currentX = targetX = defaultX;
         currentY = targetY = defaultY;
         spritePrefs.edit().remove("lastX").remove("lastY").apply();
+
+        final int camLeft = (int)(currentX - Math.max(1, getWidth())/2f);
+        final int camTop  = (int)(currentY - Math.max(1, getHeight())/2f);
+
+        post(() -> {
+            if (cameraChangeListener != null) {
+                cameraChangeListener.onCameraChanged(camLeft, camTop);
+            }
+        });
     }
 
     public void reloadBackground() {
         String userId = getUserId();
         String bgKey = (userId != null) ? "selectedBackground_" + userId : "selectedBackground";
-        int bgResId = spritePrefs.getInt(bgKey, R.drawable.grass_tiles);
+        int bgResId = spritePrefs.getInt(bgKey, R.drawable.tiles_grass);
         Bitmap bmp = BitmapFactory.decodeResource(getResources(), bgResId);
         if (bmp == null) {
-            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grass_tiles);
+            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.tiles_grass);
         }
         backgroundImage = bmp;
     }
@@ -324,4 +368,50 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         boolean isLoggedIn = loginPrefs.getBoolean("isLoggedIn", false);
         return isLoggedIn ? loginPrefs.getString("id", null) : null;
     }
+
+    // SpriteView.java 안에 추가
+    public int[] computeCurrentCameraLT() {
+        if (backgroundImage == null) return new int[]{0, 0};
+
+        int viewWidth = Math.max(1, getWidth());
+        int viewHeight = Math.max(1, getHeight());
+
+        // centerX/centerY는 화면 중앙
+        float centerX = viewWidth / 2f;
+        float centerY = viewHeight / 2f;
+
+        // drawFrame과 동일 로직: currentX/currentY 기준
+        float offsetX = currentX - centerX;
+        float offsetY = currentY - centerY;
+
+        int bgLeft = (int) offsetX;
+        int bgTop = (int) offsetY;
+        int bgRight = bgLeft + viewWidth;
+        int bgBottom = bgTop + viewHeight;
+
+        if (bgLeft < 0) { bgRight += -bgLeft; bgLeft = 0; }
+        if (bgTop < 0)  { bgBottom += -bgTop; bgTop = 0; }
+        if (bgRight > backgroundImage.getWidth()) {
+            bgLeft -= (bgRight - backgroundImage.getWidth());
+            bgRight = backgroundImage.getWidth();
+        }
+        if (bgBottom > backgroundImage.getHeight()) {
+            bgTop -= (bgBottom - backgroundImage.getHeight());
+            bgBottom = backgroundImage.getHeight();
+        }
+
+        bgLeft = Math.max(0, bgLeft);
+        bgTop = Math.max(0, bgTop);
+
+        return new int[]{ bgLeft, bgTop };
+    }
+
+    public int getWorldWidth() {
+        return (backgroundImage != null) ? backgroundImage.getWidth() : 0;
+    }
+
+    public int getWorldHeight() {
+        return (backgroundImage != null) ? backgroundImage.getHeight() : 0;
+    }
+
 }

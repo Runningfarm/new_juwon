@@ -32,9 +32,13 @@ public class Tab4Activity extends AppCompatActivity {
     private ChipGroup farmCategoryGroup;
     private Chip chipCrop, chipCollect, chipDecor, chipPicnic, chipStructure, chipFence;
 
-    // 목장 ChipGroup (신규)
+    // 목장 ChipGroup
     private ChipGroup ranchCategoryGroup;
     private Chip chipAnimal, chipRanchStructure, chipBreeding, chipEtc;
+
+    // 집 ChipGroup (신규)
+    private ChipGroup houseCategoryGroup;
+    private Chip chipFurniture, chipArchitecture;
 
     private ImageButton tab1Button, tab2Button, tab3Button, tab4Button, tab6Button;
 
@@ -62,6 +66,7 @@ public class Tab4Activity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tabLayout);
         tabLayout.addTab(tabLayout.newTab().setText("농장"));
         tabLayout.addTab(tabLayout.newTab().setText("목장"));
+        tabLayout.addTab(tabLayout.newTab().setText("집"));     // ★ 신규 탭
         tabLayout.addTab(tabLayout.newTab().setText("배경"));
         tabLayout.addTab(tabLayout.newTab().setText("먹이"));
 
@@ -74,20 +79,24 @@ public class Tab4Activity extends AppCompatActivity {
         chipStructure = findViewById(R.id.chip_structure);
         chipFence = findViewById(R.id.chip_fence);
 
-        // 목장 그룹 (신규)
+        // 목장 그룹
         ranchCategoryGroup = findViewById(R.id.ranchCategoryGroup);
         chipAnimal = findViewById(R.id.chip_animal);
         chipRanchStructure = findViewById(R.id.chip_ranch_structure);
         chipBreeding = findViewById(R.id.chip_breeding);
         chipEtc = findViewById(R.id.chip_etc);
 
+        // 집 그룹 (신규)
+        houseCategoryGroup = findViewById(R.id.houseCategoryGroup);
+        chipFurniture = findViewById(R.id.chip_furniture);
+        chipArchitecture = findViewById(R.id.chip_architecture);
+
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
         itemList = new ArrayList<>();
         // 초기: 농장-농작물
-        farmCategoryGroup.setVisibility(View.VISIBLE);
-        ranchCategoryGroup.setVisibility(View.GONE);
+        showOnlyGroup("농장");
         chipCrop.setChecked(true);
         loadItems("농작물");
 
@@ -100,25 +109,26 @@ public class Tab4Activity extends AppCompatActivity {
                 String tabName = tab.getText() != null ? tab.getText().toString() : "";
                 switch (tabName) {
                     case "농장":
-                        farmCategoryGroup.setVisibility(View.VISIBLE);
-                        ranchCategoryGroup.setVisibility(View.GONE);
+                        showOnlyGroup("농장");
                         chipCrop.setChecked(true);
                         loadItems("농작물");
                         break;
                     case "목장":
-                        farmCategoryGroup.setVisibility(View.GONE);
-                        ranchCategoryGroup.setVisibility(View.VISIBLE);
-                        chipAnimal.setChecked(true); // 기본 동물
+                        showOnlyGroup("목장");
+                        chipAnimal.setChecked(true);
                         loadItems("동물");
                         break;
+                    case "집":
+                        showOnlyGroup("집");
+                        chipFurniture.setChecked(true);
+                        loadItems("가구");
+                        break;
                     case "배경":
-                        farmCategoryGroup.setVisibility(View.GONE);
-                        ranchCategoryGroup.setVisibility(View.GONE);
+                        showOnlyGroup("없음");
                         loadItems("배경");
                         break;
                     case "먹이":
-                        farmCategoryGroup.setVisibility(View.GONE);
-                        ranchCategoryGroup.setVisibility(View.GONE);
+                        showOnlyGroup("없음");
                         loadItems("먹이");
                         break;
                 }
@@ -137,11 +147,35 @@ public class Tab4Activity extends AppCompatActivity {
         chipStructure.setOnClickListener(v -> { loadItems("구조물"); adapter.updateList(itemList); });
         chipFence.setOnClickListener(v -> { loadItems("울타리"); adapter.updateList(itemList); });
 
-        // 목장 chip 클릭 (신규)
+        // 목장 chip 클릭
         chipAnimal.setOnClickListener(v -> { loadItems("동물"); adapter.updateList(itemList); });
         chipRanchStructure.setOnClickListener(v -> { loadItems("목장_구조물"); adapter.updateList(itemList); });
         chipBreeding.setOnClickListener(v -> { loadItems("사육"); adapter.updateList(itemList); });
         chipEtc.setOnClickListener(v -> { loadItems("기타"); adapter.updateList(itemList); });
+
+        // 집 chip 클릭 (신규)
+        chipFurniture.setOnClickListener(v -> { loadItems("가구"); adapter.updateList(itemList); });
+        chipArchitecture.setOnClickListener(v -> { loadItems("건축물"); adapter.updateList(itemList); });
+    }
+
+    private void showOnlyGroup(String which) {
+        if ("농장".equals(which)) {
+            farmCategoryGroup.setVisibility(View.VISIBLE);
+            ranchCategoryGroup.setVisibility(View.GONE);
+            houseCategoryGroup.setVisibility(View.GONE);
+        } else if ("목장".equals(which)) {
+            farmCategoryGroup.setVisibility(View.GONE);
+            ranchCategoryGroup.setVisibility(View.VISIBLE);
+            houseCategoryGroup.setVisibility(View.GONE);
+        } else if ("집".equals(which)) {
+            farmCategoryGroup.setVisibility(View.GONE);
+            ranchCategoryGroup.setVisibility(View.GONE);
+            houseCategoryGroup.setVisibility(View.VISIBLE);
+        } else {
+            farmCategoryGroup.setVisibility(View.GONE);
+            ranchCategoryGroup.setVisibility(View.GONE);
+            houseCategoryGroup.setVisibility(View.GONE);
+        }
     }
 
     private void loadItems(String category) {
@@ -210,7 +244,7 @@ public class Tab4Activity extends AppCompatActivity {
 
             // -------- 공용 탭 --------
         } else if (category.equals("배경")) {
-            String[] bgNames = {"grass_tiles", "soil_tiles", "stone_tiles"};
+            String[] bgNames = {"tiles_grass", "tiles_soil", "tiles_stone"};
             for (String bg : bgNames) {
                 int resId = getResources().getIdentifier(bg, "drawable", getPackageName());
                 if (resId != 0) itemList.add(new Item("배경", "배경", 0, resId, true));
@@ -222,7 +256,7 @@ public class Tab4Activity extends AppCompatActivity {
             int count = prefs.getInt(KEY_FOOD_COUNT, 3);
             itemList.add(new Item("먹이 아이템", "먹이", count, feedImageRes, true));
 
-            // -------- 목장 카테고리 (신규) --------
+            // -------- 목장 카테고리 --------
         } else if (category.equals("동물")) {
             String[] names = { "chicken", "cow" };
             for (String name : names) {
@@ -260,6 +294,34 @@ public class Tab4Activity extends AppCompatActivity {
                 int resId = getResources().getIdentifier(name, "drawable", getPackageName());
                 if (resId != 0) itemList.add(new Item(name, "기타", 0, resId, true));
             }
+
+            // -------- 집 카테고리 (신규) --------
+        } else if (category.equals("가구")) {
+            String[] names = {
+                    "bed_light_green", "bed_pink", "bed_skyblue",
+                    "carpet", "carpet_light_green", "carpet_pink", "carpet_skyblue",
+                    "chair_behind", "chair_front", "chair_left", "chair_right",
+                    "clock", "clock_edge", "clock_bezel",
+                    "frame_flower", "frame_morning", "frame_night",
+                    "mood_light_light_green", "mood_light_pink", "mood_light_skyblue",
+                    "nightstand",
+                    "pot_blue_flower", "pot_sprout", "pot_sunflower",
+                    "table_big", "table_small"
+            };
+            for (String name : names) {
+                int resId = getResources().getIdentifier(name, "drawable", getPackageName());
+                if (resId != 0) itemList.add(new Item(name, "가구", 0, resId, true));
+            }
+
+        } else if (category.equals("건축물")) {
+            // 아직 제공된 리소스명이 없으니 비워둡니다. 추후 이름 전달되면 여기에 추가.
+            String[] names = {
+                    // 예: "indoor_wall", "window_large", "door_basic"
+            };
+            for (String name : names) {
+                int resId = getResources().getIdentifier(name, "drawable", getPackageName());
+                if (resId != 0) itemList.add(new Item(name, "건축물", 0, resId, true));
+            }
         }
     }
 
@@ -270,19 +332,20 @@ public class Tab4Activity extends AppCompatActivity {
         if (selectedTab != null) {
             String selected = selectedTab.getText() != null ? selectedTab.getText().toString() : "";
             if (selected.equals("농장")) {
-                // 현재 체크된 농장 칩 따라 로드
                 if (chipCollect.isChecked()) loadItems("채집");
                 else if (chipDecor.isChecked()) loadItems("장식물");
                 else if (chipPicnic.isChecked()) loadItems("피크닉");
                 else if (chipStructure.isChecked()) loadItems("구조물");
                 else if (chipFence.isChecked()) loadItems("울타리");
-                else loadItems("농작물"); // 기본
+                else loadItems("농작물");
             } else if (selected.equals("목장")) {
-                // 현재 체크된 목장 칩 따라 로드
                 if (chipRanchStructure.isChecked()) loadItems("목장_구조물");
                 else if (chipBreeding.isChecked()) loadItems("사육");
                 else if (chipEtc.isChecked()) loadItems("기타");
-                else loadItems("동물"); // 기본
+                else loadItems("동물");
+            } else if (selected.equals("집")) {
+                if (chipArchitecture.isChecked()) loadItems("건축물");
+                else loadItems("가구");
             } else if (selected.equals("배경")) {
                 loadItems("배경");
             } else {

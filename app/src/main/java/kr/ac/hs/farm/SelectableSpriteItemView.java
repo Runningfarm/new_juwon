@@ -11,47 +11,36 @@ import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
 
-/**
- * 스프라이트: 걷기/대기 분리 + 랜덤 워크(연속 조향) + 진행방향 바라보기 + 마스크 지원
- * - 목표점 직선 이동 대신, 속도 벡터에 랜덤 조향을 계속 주는 자유 이동
- * - 경계 반사, 랜덤 일시정지(Idle) 지원
- */
 public class SelectableSpriteItemView extends SelectableItemView {
 
-    // 애니 2종
     private AnimationDrawable walkAnim;
     private AnimationDrawable idleAnim;
     private AnimationDrawable current;
 
-    // wander (연속 조향)
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable wanderTick = this::onWanderTick;
     private boolean wandering = false;
     private ViewGroup wanderBoundsParent;
 
-    private long stepMs = 16;              // ~60fps
-    private float speedPxPerSec = 30f;     // 기본 속도 (느리게)
-    private float vx = 30f, vy = 0f;       // 현재 속도 벡터(px/s)
+    private long stepMs = 16;
+    private float speedPxPerSec = 30f;
+    private float vx = 30f, vy = 0f;
 
-    // 조향 파라미터
-    private float noiseTurnPerSec = 1.0f;  // 초당 방향 변동(라디안) 세기 (0.5~2.0 권장)
-    private float accelFactor = 0.15f;     // 속도 크기 보정(목표 속도로 복원)
-    private float maxTurnPerTick = 0.25f;  // 프레임당 최대 회전(라디안) 클램프
+    private float noiseTurnPerSec = 1.0f;
+    private float accelFactor = 0.15f;
+    private float maxTurnPerTick = 0.25f;
 
-    // 랜덤 일시정지
     private boolean paused = false;
     private int minPauseMs = 600, maxPauseMs = 1500;
-    private int pauseChancePerSecond = 1;  // 초당 ~1% 확률 (원하면 올려/내려)
+    private int pauseChancePerSecond = 1;
 
-    // 바라보기(좌우 반전)
     private static final float FACE_EPS = 0.1f;
-    private int faceDir = 1;               // 1: 오른쪽, -1: 왼쪽
+    private int faceDir = 1;
 
     public SelectableSpriteItemView(Context context, @DrawableRes int baseResId) {
         super(context, baseResId);
     }
 
-    /** 걷기/대기 애니를 한 번에 세팅(행 기반) */
     public void applyDualSprite(@DrawableRes int sheetRes,
                                 int rows, int cols,
                                 int fpsWalk, int fpsIdle,
@@ -61,7 +50,6 @@ public class SelectableSpriteItemView extends SelectableItemView {
         applyDualSpriteWithMasks(sheetRes, rows, cols, fpsWalk, fpsIdle, walkMask, idleMask);
     }
 
-    /** 걷기/대기 애니를 마스크로 직접 세팅(빈 프레임 제외 가능) */
     public void applyDualSpriteWithMasks(@DrawableRes int sheetRes,
                                          int rows, int cols,
                                          int fpsWalk, int fpsIdle,
@@ -69,11 +57,10 @@ public class SelectableSpriteItemView extends SelectableItemView {
                                          boolean[][] idleMask) {
         idleAnim = SpriteAnimUtil.buildFromSheet(getContext(), sheetRes, rows, cols, fpsIdle, idleMask);
         walkAnim = SpriteAnimUtil.buildFromSheet(getContext(), sheetRes, rows, cols, fpsWalk, walkMask);
-        switchAnim(idleAnim); // 초기: 대기
+        switchAnim(idleAnim);
         applyFacingToImageView();
     }
 
-    // 단일 API 유지(필요 시)
     public void applySprite(@DrawableRes int sheetRes, int rows, int cols, int fps) {
         walkAnim = SpriteAnimUtil.buildFromSheet(getContext(), sheetRes, rows, cols, fps);
         idleAnim = walkAnim;
@@ -105,12 +92,9 @@ public class SelectableSpriteItemView extends SelectableItemView {
     public void startAnim() { if (current != null && !current.isRunning()) current.start(); }
     public void stopAnim()  { if (current != null && current.isRunning()) current.stop();  }
 
-    // ===== 랜덤 워크(연속 조향) =====
-
     public void enableWander(ViewGroup parent) {
         this.wanderBoundsParent = parent;
         this.wandering = true;
-        // 초기 방향 랜덤
         double th = Math.random() * Math.PI * 2;
         vx = (float)(Math.cos(th) * speedPxPerSec);
         vy = (float)(Math.sin(th) * speedPxPerSec);
@@ -124,28 +108,27 @@ public class SelectableSpriteItemView extends SelectableItemView {
         handler.removeCallbacks(wanderTick);
     }
 
-    /** 외부에서 속도 조절(px/sec) */
     public void setWanderSpeed(float pxPerSec) {
         this.speedPxPerSec = Math.max(8f, pxPerSec);
-        // 현재 속도 크기도 새 목표에 맞춰 보정
-        float s = (float)Math.hypot(vx, vy);
+        float s = (float) Math.hypot(vx, vy);
         if (s > 0.0001f) {
             float k = speedPxPerSec / s;
             vx *= k; vy *= k;
         }
     }
 
-    /** 조향 강도(라디안/초). 기본 1.0 */
     public void setTurnNoise(float radiansPerSec) {
         this.noiseTurnPerSec = Math.max(0f, radiansPerSec);
     }
+
+    // SelectableSpriteItemView.java 안에 있는 onWanderTick() 메서드를 아래로 교체
 
     private void onWanderTick() {
         if (!wandering) return;
 
         final float dt = stepMs / 1000f;
 
-        // 랜덤 일시정지 트리거
+        // 랜덤 일시정지
         if (!paused && shouldPauseThisTick(dt)) {
             paused = true;
             switchAnim(idleAnim != null ? idleAnim : current);
@@ -158,55 +141,50 @@ public class SelectableSpriteItemView extends SelectableItemView {
         }
 
         if (!paused) {
-            // 현재 속도 → 각도로
+            // 회전/속도 보정
             double angle = Math.atan2(vy, vx);
-
-            // 랜덤 조향(가우시안 작은 각도) + 클램프
             double turn = gaussian() * noiseTurnPerSec * dt;
             if (turn >  maxTurnPerTick) turn =  maxTurnPerTick;
             if (turn < -maxTurnPerTick) turn = -maxTurnPerTick;
             angle += turn;
 
-            // 속도 크기는 목표(speedPxPerSec)로 점진 보정
-            float cur = (float)Math.hypot(vx, vy);
+            float cur = (float) Math.hypot(vx, vy);
             float target = speedPxPerSec;
             float newSpeed = cur + (target - cur) * accelFactor;
 
             vx = (float)(Math.cos(angle) * newSpeed);
             vy = (float)(Math.sin(angle) * newSpeed);
 
-            // 위치 업데이트
-            float nx = getX() + vx * dt;
-            float ny = getY() + vy * dt;
+            // ✅ 이동을 '월드 좌표'로 계산
+            float nxWorld = getWorldX() + vx * dt;
+            float nyWorld = getWorldY() + vy * dt;
 
-            // 경계 반사
+            // ✅ 경계(월드 좌표): 현재 카메라 좌상단 + 화면 크기
             Rect b = getMoveBounds();
             int w = getWidth()==0 ? getLayoutParamsSafely().width : getWidth();
             int h = getHeight()==0 ? getLayoutParamsSafely().height : getHeight();
-            float minX = b.left, minY = b.top;
-            float maxX = b.right - w, maxY = b.bottom - h;
+            float minX = b.left,           minY = b.top;
+            float maxX = b.right - w,      maxY = b.bottom - h;
 
             boolean bounced = false;
-            if (nx < minX) { nx = minX; vx = Math.abs(vx); bounced = true; }
-            if (nx > maxX) { nx = maxX; vx = -Math.abs(vx); bounced = true; }
-            if (ny < minY) { ny = minY; vy = Math.abs(vy); bounced = true; }
-            if (ny > maxY) { ny = maxY; vy = -Math.abs(vy); bounced = true; }
+            if (nxWorld < minX) { nxWorld = minX; vx = Math.abs(vx); bounced = true; }
+            if (nxWorld > maxX) { nxWorld = maxX; vx = -Math.abs(vx); bounced = true; }
+            if (nyWorld < minY) { nyWorld = minY; vy = Math.abs(vy); bounced = true; }
+            if (nyWorld > maxY) { nyWorld = maxY; vy = -Math.abs(vy); bounced = true; }
 
-            setX(nx);
-            setY(ny);
+            // ✅ 월드 좌표로 세팅 → 내부에서 screen = world - camera 로 환산되어 setX/setY됨
+            setWorldPosition(nxWorld, nyWorld);
 
-            // 걷는 중 → 걷기 애니 보장
+            // 애니/좌우 보기
             if (walkAnim != null) switchAnim(walkAnim);
-
-            // 바라보기(좌우 반전)
             if (vx > FACE_EPS && faceDir != 1) { faceDir = 1; applyFacingToImageView(); }
             else if (vx < -FACE_EPS && faceDir != -1) { faceDir = -1; applyFacingToImageView(); }
 
-            // 반사 직후엔 살짝 조향 세게 줘서 벽 타기 방지
+            // 반사 후 살짝 방향 튕김
             if (bounced) {
-                double add = (Math.random() - 0.5) * 0.6; // -0.3~0.3rad
+                double add = (Math.random() - 0.5) * 0.6;
                 double a2 = Math.atan2(vy, vx) + add;
-                float s2 = (float)Math.hypot(vx, vy);
+                float s2 = (float) Math.hypot(vx, vy);
                 vx = (float)(Math.cos(a2) * s2);
                 vy = (float)(Math.sin(a2) * s2);
             }
@@ -215,41 +193,54 @@ public class SelectableSpriteItemView extends SelectableItemView {
         handler.postDelayed(wanderTick, stepMs);
     }
 
+
     private boolean shouldPauseThisTick(float dt) {
-        // 초당 pauseChancePerSecond% 확률 → 프레임 단위 확률
-        // 예: 1%/s 이면 dt=0.016에서 약 0.00016 확률
         double p = (pauseChancePerSecond / 100.0) * dt;
         return Math.random() < p;
     }
 
     private int randomRange(int a, int b) { return a + (int)(Math.random() * (Math.max(1, b - a))); }
     private double gaussian() {
-        // Box–Muller
         double u = Math.max(1e-6, Math.random());
         double v = Math.max(1e-6, Math.random());
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2 * Math.PI * v);
     }
-
-    // ===== 유틸 =====
 
     private void applyFacingToImageView() {
         ImageView iv = getItemImageView();
         if (iv != null) iv.setScaleX(faceDir);
     }
 
-    private Rect getMoveBounds() {
-        Rect r = new Rect();
-        if (wanderBoundsParent == null) {
-            View p = (View) getParent();
-            if (p == null) return r;
-            r.set(0, 0, p.getWidth(), p.getHeight()); return r;
+    // SelectableSpriteItemView.java
+
+    // SelectableSpriteItemView.java 안의 getMoveBounds()를 아래로 교체
+
+    // SelectableSpriteItemView.java (기존 getMoveBounds() 전체 교체)
+    private android.graphics.Rect getMoveBounds() {
+        // 1순위: 명시된 월드 경계(배경 전체)
+        if (worldBounds != null && worldBounds.width() > 0 && worldBounds.height() > 0) {
+            return new android.graphics.Rect(worldBounds);
         }
-        int l = wanderBoundsParent.getPaddingLeft();
-        int t = wanderBoundsParent.getPaddingTop();
-        int rr = wanderBoundsParent.getWidth() - wanderBoundsParent.getPaddingRight();
-        int bb = wanderBoundsParent.getHeight() - wanderBoundsParent.getPaddingBottom();
-        r.set(l, t, rr, bb); return r;
+
+        // 2순위(폴백): 현재 카메라(보이는 화면) 경계
+        android.graphics.Rect r = new android.graphics.Rect();
+        ViewGroup p = (ViewGroup) getParent();
+        if (p == null) return r;
+
+        int viewW = p.getWidth();
+        int viewH = p.getHeight();
+
+        int l = (int) getCameraLeft();
+        int t = (int) getCameraTop();
+        int rr = l + viewW;
+        int bb = t + viewH;
+
+        r.set(l, t, rr, bb);
+        return r;
     }
+
+
+
 
     private ViewGroup.LayoutParams getLayoutParamsSafely() {
         ViewGroup.LayoutParams lp = getLayoutParams();
@@ -270,4 +261,18 @@ public class SelectableSpriteItemView extends SelectableItemView {
         for (int r=0;r<rows;r++) if (!ex[r]) for (int c=0;c<cols;c++) m[r][c]=true;
         return m;
     }
+
+    // SelectableSpriteItemView.java (필드 구역 어딘가에 추가)
+    private android.graphics.Rect worldBounds = null;
+
+    /** 배경(월드) 전체 경계 설정: (0,0) ~ (worldW, worldH) */
+    public void setWorldBounds(int worldW, int worldH) {
+        if (worldW <= 0 || worldH <= 0) {
+            worldBounds = null; // 비정상이면 해제하고 기본(카메라) 경계로
+        } else {
+            worldBounds = new android.graphics.Rect(0, 0, worldW, worldH);
+        }
+    }
+
+
 }

@@ -30,15 +30,28 @@ public class SelectableItemView extends FrameLayout {
 
     private boolean isEditEnabled = false;
 
+    // ★ 월드/카메라 상태
+    private float worldX = 0f, worldY = 0f;
+    private float cameraLeft = 0f, cameraTop = 0f;
+
+    // ★ 아래 2개 getter 추가
+    public float getCameraLeft() { return cameraLeft; }
+    public float getCameraTop()  { return cameraTop;  }
+
     public interface OnDoubleTapListener {
         void onDoubleTap();
     }
-
     private OnDoubleTapListener doubleTapListener;
-
     public void setOnDoubleTapListener(OnDoubleTapListener listener) {
         this.doubleTapListener = listener;
     }
+
+    // ★ 드래그 종료 콜백(월드 좌표 갱신용)
+    public interface OnDragEndListener {
+        void onDragEnd(SelectableItemView v);
+    }
+    private OnDragEndListener dragEndListener;
+    public void setOnDragEndListener(OnDragEndListener l) { this.dragEndListener = l; }
 
     public SelectableItemView(Context context, int resId) {
         super(context);
@@ -91,9 +104,7 @@ public class SelectableItemView extends FrameLayout {
 
         gestureDetector = new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                return true;
-            }
+            public boolean onDoubleTap(MotionEvent e) { return true; }
         });
 
         setOnTouchListener(touchListener);
@@ -102,10 +113,35 @@ public class SelectableItemView extends FrameLayout {
         setFocusable(false);
     }
 
-    // ★ 버튼 크기 자동 조정
+    // ====== 월드/카메라 API ======
+    public void setCameraOffset(float left, float top) {
+        this.cameraLeft = left;
+        this.cameraTop = top;
+    }
+
+    public void setWorldPosition(float wx, float wy) {
+        this.worldX = wx;
+        this.worldY = wy;
+        applyScreenFromWorld();
+    }
+
+    public void updateWorldFromScreen() {
+        this.worldX = getX() + cameraLeft;
+        this.worldY = getY() + cameraTop;
+    }
+
+    public void applyScreenFromWorld() {
+        setX(worldX - cameraLeft);
+        setY(worldY - cameraTop);
+    }
+
+    public float getWorldX() { return worldX; }
+    public float getWorldY() { return worldY; }
+
+    // ====== 버튼 크기 ======
     private void updateButtonSizes() {
         int itemSize = Math.min(getWidth(), getHeight());
-        int buttonSize = Math.max(30, itemSize / 4);  // 최소 30
+        int buttonSize = Math.max(30, itemSize / 4);
 
         FrameLayout.LayoutParams layoutParams;
 
@@ -140,7 +176,6 @@ public class SelectableItemView extends FrameLayout {
         setSize(newWidth, newHeight);
     }
 
-    // ★ 크기 변경 시 버튼 크기 반영
     private void setSize(int width, int height) {
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
         params.width = width;
@@ -149,9 +184,7 @@ public class SelectableItemView extends FrameLayout {
         updateButtonSizes();
     }
 
-    public int getResId() {
-        return resId;
-    }
+    public int getResId() { return resId; }
 
     public void hideBorderAndButtons() {
         borderView.setVisibility(View.GONE);
@@ -179,9 +212,7 @@ public class SelectableItemView extends FrameLayout {
     private OnTouchListener touchListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            if (!isEditEnabled) {
-                return false;
-            }
+            if (!isEditEnabled) return false;
 
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
@@ -189,7 +220,7 @@ public class SelectableItemView extends FrameLayout {
                     dY = getY() - event.getRawY();
                     break;
 
-                case MotionEvent.ACTION_MOVE:
+                case MotionEvent.ACTION_MOVE: {
                     float newX = event.getRawX() + dX;
                     float newY = event.getRawY() + dY;
 
@@ -213,33 +244,27 @@ public class SelectableItemView extends FrameLayout {
                     setX(newX);
                     setY(newY);
                     break;
+                }
 
                 case MotionEvent.ACTION_UP:
+                    // ★ 드래그 끝나면 월드 좌표 갱신
+                    updateWorldFromScreen();
+                    if (dragEndListener != null) dragEndListener.onDragEnd(SelectableItemView.this);
                     break;
             }
             return true;
         }
     };
 
-    // ====== ★★★ 스프라이트/외부 컨트롤용 공개 메서드 추가 ★★★ ======
-
-    /** 내부 기본 이미지(ImageView)에 드로어블을 직접 세팅 */
+    // ====== 스프라이트/외부 컨트롤용 공개 메서드 ======
     public void setItemImageDrawable(android.graphics.drawable.Drawable d) {
         itemImage.setImageDrawable(d);
     }
-
-    /** 내부 기본 이미지 숨김/표시 */
     public void setItemImageVisible(boolean visible) {
         itemImage.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
-
-    /** 내부 기본 이미지 제거(널) */
     public void clearItemImage() {
         itemImage.setImageDrawable(null);
     }
-
-    /** 내부 기본 ImageView를 반환(필요 시) */
-    public ImageView getItemImageView() {
-        return itemImage;
-    }
+    public ImageView getItemImageView() { return itemImage; }
 }
