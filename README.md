@@ -732,5 +732,26 @@ activity_edit_profile.xml
 ```
 -> 이 코드를 추가함
 
+## <8/13 수정사항>
 
+합칠 때 사용한 파일은
+
+```
+index.js
+User.js
+Tab2Activity.java
+activity_tab3.xml
+```
+
+→ 위 파일들은 깃허브에 업로드된 파일 그대로 복사해서 사용했습니다.
+
+```
+Tab3Activity.java
+LoginResponse.java
+EditProfileActivity.java
+file_paths.xml
+AndroidManifest.xml
+```
+
+→ 이 파일들은 README에 올려주신 대로 수정했습니다.
 
