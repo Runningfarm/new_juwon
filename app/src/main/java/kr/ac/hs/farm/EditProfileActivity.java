@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.http.Header;
 
 public class EditProfileActivity extends AppCompatActivity {
 
@@ -22,6 +23,9 @@ public class EditProfileActivity extends AppCompatActivity {
     private Button buttonUpdate;
 
     private TextView tvTotalRunTimeProfile;
+    private TextView tvTotalDistanceProfile;
+    private TextView tvTotalCaloriesProfile;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,8 @@ public class EditProfileActivity extends AppCompatActivity {
         editPassword = findViewById(R.id.editPassword);
         buttonUpdate = findViewById(R.id.buttonUpdate);
         tvTotalRunTimeProfile = findViewById(R.id.tvTotalRunTimeProfile);
+        tvTotalDistanceProfile  = findViewById(R.id.tvTotalDistanceProfile);
+        tvTotalCaloriesProfile  = findViewById(R.id.tvTotalCaloriesProfile);
 
         // ▼ 저장된 로그인 정보 불러오기
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
@@ -51,7 +57,11 @@ public class EditProfileActivity extends AppCompatActivity {
         String name = pref.getString("name", "");
         float weight = pref.getFloat("weight", 0f);
         long totalRunSecs = pref.getLong("total_run_time_seconds", 0L);
+        float totalDistance = pref.getFloat("total_distance", 0f);
+        long totalCalories = pref.getLong("total_calories", 0L);
         tvTotalRunTimeProfile.setText(formatSecondsToHMS(totalRunSecs));
+        tvTotalDistanceProfile.setText(totalDistance + " km");
+        tvTotalCaloriesProfile.setText(totalCalories + " kcal");
 
         // ▼ 초기값 설정
         editEmail.setText(id);

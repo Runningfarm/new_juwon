@@ -9,6 +9,9 @@ public class LoginResponse {
 
     private long totalRunTime;
 
+    private double totalDistance;
+    private int totalCalories;
+
     public boolean isSuccess() {
         return success;
     }
@@ -32,5 +35,9 @@ public class LoginResponse {
     public long getTotalRunTime() {
         return totalRunTime;
     }
+
+    public double getTotalDistance() { return totalDistance; }
+
+    public int getTotalCalories() { return totalCalories; }
 
 }

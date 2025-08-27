@@ -25,7 +25,7 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private float currentX, currentY;
     private float targetX, targetY;
-    private float speed = 5f;
+    private float speed = 7f;
     private float stopThreshold = 3f;
 
     private boolean isMoving = false;

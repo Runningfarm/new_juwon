@@ -62,4 +62,8 @@ dependencies {
     //Lottie
     implementation("com.airbnb.android:lottie:6.4.0")
 
+    implementation("com.google.mlkit:image-labeling:17.0.7")
+
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
 }

@@ -20,7 +20,7 @@ public class SelectableItemView extends FrameLayout {
     private ImageView sizeDecreaseButton;
 
     private float dX, dY;
-    private int gridSize = 30;
+    private int gridSize = 30; // 일반 아이템 스냅
 
     private float rotationDegrees = 0f;
 
@@ -30,26 +30,28 @@ public class SelectableItemView extends FrameLayout {
 
     private boolean isEditEnabled = false;
 
-    // ★ 월드/카메라 상태
+    // 월드/카메라
     private float worldX = 0f, worldY = 0f;
     private float cameraLeft = 0f, cameraTop = 0f;
 
-    // ★ 아래 2개 getter 추가
+    // 커스텀 비트맵/울타리 태그
+    private android.graphics.Bitmap customBitmap = null;
+    private Integer fenceMaskTag = null;
+    private Integer atlasResIdTag = null;
+    private Integer fenceGridXTag = null; // 그리드 좌표 보존
+    private Integer fenceGridYTag = null;
+
+    // fence 전용 모드(버튼 숨김)
+    private boolean isFenceMode = false;
+
     public float getCameraLeft() { return cameraLeft; }
     public float getCameraTop()  { return cameraTop;  }
 
-    public interface OnDoubleTapListener {
-        void onDoubleTap();
-    }
+    public interface OnDoubleTapListener { void onDoubleTap(); }
     private OnDoubleTapListener doubleTapListener;
-    public void setOnDoubleTapListener(OnDoubleTapListener listener) {
-        this.doubleTapListener = listener;
-    }
+    public void setOnDoubleTapListener(OnDoubleTapListener l){ this.doubleTapListener = l; }
 
-    // ★ 드래그 종료 콜백(월드 좌표 갱신용)
-    public interface OnDragEndListener {
-        void onDragEnd(SelectableItemView v);
-    }
+    public interface OnDragEndListener { void onDragEnd(SelectableItemView v); }
     private OnDragEndListener dragEndListener;
     public void setOnDragEndListener(OnDragEndListener l) { this.dragEndListener = l; }
 
@@ -88,118 +90,95 @@ public class SelectableItemView extends FrameLayout {
         sizeDecreaseButton.setImageResource(android.R.drawable.arrow_down_float);
         addView(sizeDecreaseButton);
 
-        deleteButton.setOnClickListener(v -> {
-            if (doubleTapListener != null) doubleTapListener.onDoubleTap();
-        });
-
-        rotateButton.setOnClickListener(v -> {
-            rotationDegrees = (rotationDegrees + 45f) % 360;
-            setRotation(rotationDegrees);
-        });
-
+        deleteButton.setOnClickListener(v -> { if (doubleTapListener != null) doubleTapListener.onDoubleTap(); });
+        rotateButton.setOnClickListener(v -> { rotationDegrees = (rotationDegrees + 45f) % 360; setRotation(rotationDegrees); });
         sizeIncreaseButton.setOnClickListener(v -> increaseSize());
         sizeDecreaseButton.setOnClickListener(v -> decreaseSize());
 
         hideBorderAndButtons();
 
         gestureDetector = new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDoubleTap(MotionEvent e) { return true; }
+            @Override public boolean onDoubleTap(MotionEvent e) { return true; }
         });
 
         setOnTouchListener(touchListener);
-
         setClickable(false);
         setFocusable(false);
     }
 
-    // ====== 월드/카메라 API ======
-    public void setCameraOffset(float left, float top) {
-        this.cameraLeft = left;
-        this.cameraTop = top;
-    }
-
-    public void setWorldPosition(float wx, float wy) {
-        this.worldX = wx;
-        this.worldY = wy;
-        applyScreenFromWorld();
-    }
-
-    public void updateWorldFromScreen() {
-        this.worldX = getX() + cameraLeft;
-        this.worldY = getY() + cameraTop;
-    }
-
-    public void applyScreenFromWorld() {
-        setX(worldX - cameraLeft);
-        setY(worldY - cameraTop);
-    }
-
+    // ===== 월드/카메라 =====
+    public void setCameraOffset(float left, float top) { this.cameraLeft = left; this.cameraTop = top; }
+    public void setWorldPosition(float wx, float wy) { this.worldX = wx; this.worldY = wy; applyScreenFromWorld(); }
+    public void updateWorldFromScreen() { this.worldX = getX() + cameraLeft; this.worldY = getY() + cameraTop; }
+    public void applyScreenFromWorld() { setX(worldX - cameraLeft); setY(worldY - cameraTop); }
     public float getWorldX() { return worldX; }
     public float getWorldY() { return worldY; }
 
-    // ====== 버튼 크기 ======
+    // ===== 버튼 크기 =====
     private void updateButtonSizes() {
         int itemSize = Math.min(getWidth(), getHeight());
         int buttonSize = Math.max(30, itemSize / 4);
 
-        FrameLayout.LayoutParams layoutParams;
-
-        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
-        layoutParams.gravity = Gravity.TOP | Gravity.END;
-        deleteButton.setLayoutParams(layoutParams);
-
-        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
-        layoutParams.gravity = Gravity.BOTTOM | Gravity.END;
-        rotateButton.setLayoutParams(layoutParams);
-
-        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
-        layoutParams.gravity = Gravity.TOP | Gravity.START;
-        sizeIncreaseButton.setLayoutParams(layoutParams);
-
-        layoutParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
-        layoutParams.gravity = Gravity.BOTTOM | Gravity.START;
-        sizeDecreaseButton.setLayoutParams(layoutParams);
+        FrameLayout.LayoutParams lp;
+        lp = new FrameLayout.LayoutParams(buttonSize, buttonSize); lp.gravity = Gravity.TOP    | Gravity.END;  deleteButton.setLayoutParams(lp);
+        lp = new FrameLayout.LayoutParams(buttonSize, buttonSize); lp.gravity = Gravity.BOTTOM | Gravity.END;  rotateButton.setLayoutParams(lp);
+        lp = new FrameLayout.LayoutParams(buttonSize, buttonSize); lp.gravity = Gravity.TOP    | Gravity.START; sizeIncreaseButton.setLayoutParams(lp);
+        lp = new FrameLayout.LayoutParams(buttonSize, buttonSize); lp.gravity = Gravity.BOTTOM | Gravity.START; sizeDecreaseButton.setLayoutParams(lp);
     }
 
-    private void increaseSize() {
-        int newWidth = getWidth() + gridSize;
-        int newHeight = getHeight() + gridSize;
-        setSize(newWidth, newHeight);
-    }
-
+    private void increaseSize() { setSize(getWidth()+gridSize, getHeight()+gridSize); }
     private void decreaseSize() {
-        int newWidth = getWidth() - gridSize;
-        int newHeight = getHeight() - gridSize;
-        if (newWidth < 60) newWidth = 60;
-        if (newHeight < 60) newHeight = 60;
-        setSize(newWidth, newHeight);
+        int nw = getWidth()-gridSize, nh = getHeight()-gridSize;
+        if (nw < 60) nw = 60; if (nh < 60) nh = 60; setSize(nw, nh);
     }
-
-    private void setSize(int width, int height) {
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
-        params.width = width;
-        params.height = height;
-        setLayoutParams(params);
-        updateButtonSizes();
+    private void setSize(int w, int h) {
+        FrameLayout.LayoutParams p = (FrameLayout.LayoutParams) getLayoutParams();
+        p.width = w; p.height = h; setLayoutParams(p); updateButtonSizes();
     }
 
     public int getResId() { return resId; }
 
+    public Integer getFenceMaskTag() { return fenceMaskTag; }
+    public Integer getAtlasResIdTag() { return atlasResIdTag; }
+    public Integer getFenceGridXTag() { return fenceGridXTag; }
+    public Integer getFenceGridYTag() { return fenceGridYTag; }
+
+    public void setFenceGridCell(int gx, int gy) { this.fenceGridXTag = gx; this.fenceGridYTag = gy; }
+    public void setFenceMode(boolean enable) {
+        isFenceMode = enable;
+        if (enable) { // 울타리는 회전/크기 버튼 숨김
+            rotateButton.setVisibility(View.GONE);
+            sizeIncreaseButton.setVisibility(View.GONE);
+            sizeDecreaseButton.setVisibility(View.GONE);
+        }
+    }
+
     public void hideBorderAndButtons() {
         borderView.setVisibility(View.GONE);
         deleteButton.setVisibility(View.GONE);
-        rotateButton.setVisibility(View.GONE);
-        sizeIncreaseButton.setVisibility(View.GONE);
-        sizeDecreaseButton.setVisibility(View.GONE);
+        if (!isFenceMode) {
+            rotateButton.setVisibility(View.GONE);
+            sizeIncreaseButton.setVisibility(View.GONE);
+            sizeDecreaseButton.setVisibility(View.GONE);
+        } else {
+            rotateButton.setVisibility(View.GONE);
+            sizeIncreaseButton.setVisibility(View.GONE);
+            sizeDecreaseButton.setVisibility(View.GONE);
+        }
     }
 
     public void showBorderAndButtons() {
         borderView.setVisibility(View.VISIBLE);
         deleteButton.setVisibility(View.VISIBLE);
-        rotateButton.setVisibility(View.VISIBLE);
-        sizeIncreaseButton.setVisibility(View.VISIBLE);
-        sizeDecreaseButton.setVisibility(View.VISIBLE);
+        if (!isFenceMode) {
+            rotateButton.setVisibility(View.VISIBLE);
+            sizeIncreaseButton.setVisibility(View.VISIBLE);
+            sizeDecreaseButton.setVisibility(View.VISIBLE);
+        } else {
+            rotateButton.setVisibility(View.GONE);
+            sizeIncreaseButton.setVisibility(View.GONE);
+            sizeDecreaseButton.setVisibility(View.GONE);
+        }
         updateButtonSizes();
     }
 
@@ -210,44 +189,37 @@ public class SelectableItemView extends FrameLayout {
     }
 
     private OnTouchListener touchListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent event) {
+        @Override public boolean onTouch(View v, MotionEvent e) {
             if (!isEditEnabled) return false;
 
-            switch (event.getActionMasked()) {
+            switch (e.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    dX = getX() - event.getRawX();
-                    dY = getY() - event.getRawY();
+                    dX = getX() - e.getRawX();
+                    dY = getY() - e.getRawY();
                     break;
 
                 case MotionEvent.ACTION_MOVE: {
-                    float newX = event.getRawX() + dX;
-                    float newY = event.getRawY() + dY;
+                    float newX = e.getRawX() + dX;
+                    float newY = e.getRawY() + dY;
 
+                    // 일반 아이템은 gridSize, 울타리는 GRID_PX(=48) 스냅 되도록 외부에서 보정
                     newX = Math.round(newX / gridSize) * gridSize;
                     newY = Math.round(newY / gridSize) * gridSize;
 
                     View parent = (View) getParent();
                     if (parent != null) {
-                        int parentWidth = parent.getWidth();
-                        int parentHeight = parent.getHeight();
-
-                        int itemWidth = getWidth();
-                        int itemHeight = getHeight();
-
+                        int pw = parent.getWidth(), ph = parent.getHeight();
+                        int iw = getWidth(), ih = getHeight();
                         if (newX < 0) newX = 0;
                         if (newY < 0) newY = 0;
-                        if (newX > parentWidth - itemWidth) newX = parentWidth - itemWidth;
-                        if (newY > parentHeight - itemHeight) newY = parentHeight - itemHeight;
+                        if (newX > pw - iw) newX = pw - iw;
+                        if (newY > ph - ih) newY = ph - ih;
                     }
-
-                    setX(newX);
-                    setY(newY);
+                    setX(newX); setY(newY);
                     break;
                 }
 
                 case MotionEvent.ACTION_UP:
-                    // ★ 드래그 끝나면 월드 좌표 갱신
                     updateWorldFromScreen();
                     if (dragEndListener != null) dragEndListener.onDragEnd(SelectableItemView.this);
                     break;
@@ -256,15 +228,16 @@ public class SelectableItemView extends FrameLayout {
         }
     };
 
-    // ====== 스프라이트/외부 컨트롤용 공개 메서드 ======
-    public void setItemImageDrawable(android.graphics.drawable.Drawable d) {
-        itemImage.setImageDrawable(d);
-    }
-    public void setItemImageVisible(boolean visible) {
-        itemImage.setVisibility(visible ? View.VISIBLE : View.GONE);
-    }
-    public void clearItemImage() {
-        itemImage.setImageDrawable(null);
-    }
+    // 외부 제어용
+    public void setItemImageDrawable(android.graphics.drawable.Drawable d) { itemImage.setImageDrawable(d); }
+    public void setItemImageVisible(boolean visible) { itemImage.setVisibility(visible ? View.VISIBLE : View.GONE); }
+    public void clearItemImage() { itemImage.setImageDrawable(null); }
     public ImageView getItemImageView() { return itemImage; }
+
+    public void setCustomBitmap(android.graphics.Bitmap bm, int atlasResIdTag, int fenceMaskTag) {
+        this.customBitmap = bm;
+        this.atlasResIdTag = atlasResIdTag;
+        this.fenceMaskTag = fenceMaskTag;
+        this.itemImage.setImageBitmap(bm);
+    }
 }

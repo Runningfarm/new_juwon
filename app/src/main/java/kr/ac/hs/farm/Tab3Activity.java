@@ -44,8 +44,8 @@ public class Tab3Activity extends AppCompatActivity {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_CAMERA_PERMISSION = 100; //추가
-    private ProgressBar[] progressBars = new ProgressBar[17];
-    private Button[] claimButtons = new Button[17];
+    private ProgressBar[] progressBars = new ProgressBar[23];
+    private Button[] claimButtons = new Button[23];
     private ImageView imagePreview;
     private Location startLocation; // 러닝 시작 지점 저장용
     private Uri photoURI;
@@ -82,6 +82,12 @@ public class Tab3Activity extends AppCompatActivity {
         progressBars[14] = findViewById(R.id.progressQuest15);
         progressBars[15] = findViewById(R.id.progressQuest16);
         progressBars[16] = findViewById(R.id.progressQuest17);
+        progressBars[17] = findViewById(R.id.progressQuest18);
+        progressBars[18] = findViewById(R.id.progressQuest19);
+        progressBars[19] = findViewById(R.id.progressQuest20);
+        progressBars[20] = findViewById(R.id.progressQuest21);
+        progressBars[21] = findViewById(R.id.progressQuest22);
+        progressBars[22] = findViewById(R.id.progressQuest23);
 
         claimButtons[0] = findViewById(R.id.btnClaim1);
         claimButtons[1] = findViewById(R.id.btnClaim2);
@@ -100,6 +106,12 @@ public class Tab3Activity extends AppCompatActivity {
         claimButtons[14] = findViewById(R.id.btnClaim15);
         claimButtons[15] = findViewById(R.id.btnClaim16);
         claimButtons[16] = findViewById(R.id.btnClaim17);
+        claimButtons[17] = findViewById(R.id.btnClaim18);
+        claimButtons[18] = findViewById(R.id.btnClaim19);
+        claimButtons[19] = findViewById(R.id.btnClaim20);
+        claimButtons[20] = findViewById(R.id.btnClaim21);
+        claimButtons[21] = findViewById(R.id.btnClaim22);
+        claimButtons[22] = findViewById(R.id.btnClaim23);
 
         imagePreview = findViewById(R.id.imagePreview);
         Button buttonTakePhoto = findViewById(R.id.buttonTakePhoto);
@@ -297,7 +309,7 @@ public class Tab3Activity extends AppCompatActivity {
     }
 
     private void updateQuestUI(List<QuestProgressResponse.Quest> quests) {
-        for (int i = 0; i < Math.min(quests.size(), 17); i++) {
+        for (int i = 0; i < Math.min(quests.size(), 23); i++) {
             QuestProgressResponse.Quest q = quests.get(i);
             double target = q.getTarget();
             int percent = (target > 0) ? (int) ((q.getProgress() / target) * 100) : 0;
