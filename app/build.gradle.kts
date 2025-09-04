@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "kr.ac.hs.farm"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "kr.ac.hs.farm"
@@ -28,12 +28,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 

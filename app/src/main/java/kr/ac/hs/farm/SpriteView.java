@@ -59,6 +59,11 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     // 마지막 카메라 상태
     private int lastBgLeft = -1, lastBgTop = -1;
 
+    // SpriteView 클래스 하단부 어딘가에 public getter 2개 추가
+    public float getCharacterWorldX() { return currentX; }
+    public float getCharacterWorldY() { return currentY; }
+
+
     public SpriteView(Context context) {
         super(context);
         setFocusable(true);

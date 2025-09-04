@@ -145,6 +145,13 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
                         Log.d("러닝", "distance=" + tvDistance.getText().toString());
                         Log.d("러닝", "kcal=" + tvKcal.getText().toString());
                         Log.d("러닝", "pace=" + tvPace.getText().toString());
+
+                        // Tab3로 이번 러닝 거리 전달
+                        Intent intent = new Intent(Tab2Activity.this, Tab3Activity.class);
+                        double distanceKm = totalDistance; // totalDistance는 km 단위
+                        intent.putExtra("lastRunDistance", distanceKm);
+                        startActivity(intent);
+
                         sendRunResultToServer();
                     })
                     .setNegativeButton("아니오", (dialog, which) -> dialog.dismiss())

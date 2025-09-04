@@ -3,23 +3,22 @@ package kr.ac.hs.farm;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.graphics.Bitmap;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.widget.ProgressBar;
 import android.widget.Button;
 import android.content.SharedPreferences;
 import android.widget.ImageView;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.ViewCompat;
@@ -42,15 +41,18 @@ import android.view.View;
 
 public class Tab3Activity extends AppCompatActivity {
 
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int REQUEST_CAMERA_PERMISSION = 100; //추가
     private ProgressBar[] progressBars = new ProgressBar[23];
     private Button[] claimButtons = new Button[23];
-    private ImageView imagePreview;
-    private Location startLocation; // 러닝 시작 지점 저장용
+    private ProgressBar progressQuestP1, progressQuestP2;
+    private ImageView boxRewardP1, boxRewardP2;
+    private Button btnClaimP1, btnClaimP2;
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher;
+    private ActivityResultLauncher<Uri> takePictureLauncher;
+    private ActivityResultLauncher<Intent> previewLauncher;
     private Uri photoURI;
     private File photoFile;
-    private Button buttonTakePhoto;
+    private int currentPhotoQuestNumber = -1; // P1 또는 P2
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,18 +115,36 @@ public class Tab3Activity extends AppCompatActivity {
         claimButtons[21] = findViewById(R.id.btnClaim22);
         claimButtons[22] = findViewById(R.id.btnClaim23);
 
-        imagePreview = findViewById(R.id.imagePreview);
-        Button buttonTakePhoto = findViewById(R.id.buttonTakePhoto);
+        //  카메라 퀘스트(P1, P2) 뷰 바인딩
+        progressQuestP1 = findViewById(R.id.progressQuestP1);
+        progressQuestP2 = findViewById(R.id.progressQuestP2);
+        boxRewardP1 = findViewById(R.id.boxRewardP1);
+        boxRewardP2 = findViewById(R.id.boxRewardP2);
+        btnClaimP1 = findViewById(R.id.btnClaimP1);
+        btnClaimP2 = findViewById(R.id.btnClaimP2);
 
-        getStartLocation(); //러닝 시작 위치 설정
+        double lastRunDistance = getIntent().getDoubleExtra("lastRunDistance", 0.0);
+        // Activity Result 런처 초기화
+        setupActivityResultLaunchers();
 
-        //사진 찍기 버튼 동작 정의
-        buttonTakePhoto.setOnClickListener(v -> {
-            if(checkLocationDistance()){
-                requestCameraPermission();
-            } else{
-                Toast.makeText(this,"2km 이상 이동해야 퀘스트를 수행할 수 있습니다.", Toast.LENGTH_LONG).show();
+        // 전달받은 러닝 거리를 1km 조건 체크에 활용
+        btnClaimP1.setEnabled(lastRunDistance >= 1.0);
+        btnClaimP2.setEnabled(true); // 항상 가능
+
+        // p1번 버튼 클릭 → 권한 → 촬영 → 미리보기
+        btnClaimP1.setOnClickListener(v -> {
+            currentPhotoQuestNumber = 101;
+            if (lastRunDistance < 1.0) {
+                Toast.makeText(this, "1km 이상 러닝 시 활성화됩니다.", Toast.LENGTH_LONG).show();
+                return;
             }
+            ensureCameraPermissionThenCapture();
+        });
+
+        //p2번 버튼 클릭 → 권한 → 촬영 → 미리보기
+        btnClaimP2.setOnClickListener(v -> {
+            currentPhotoQuestNumber = 102;
+            ensureCameraPermissionThenCapture();
         });
 
         for (int i = 0; i < claimButtons.length; i++) {
@@ -143,94 +163,6 @@ public class Tab3Activity extends AppCompatActivity {
         loadQuestProgressFromServer();
     }
 
-    // 임시 러닝 시작 지점 설정
-    private void getStartLocation() {
-        startLocation = new Location("start");
-        startLocation.setLatitude(37.5665);
-        startLocation.setLongitude(126.9780);
-    }
-
-    //현재 위치와 시작 위치 거리 비교
-    private boolean checkLocationDistance() {
-        Location currentLocation = getCurrentLocation();
-        if (currentLocation != null && startLocation != null) {
-            float distance = startLocation.distanceTo(currentLocation);
-            return distance >= 2000;
-        }
-        return false;
-    }
-
-    //임시 현재 위치 설정
-    private Location getCurrentLocation() {
-        Location location = new Location("current");
-        location.setLatitude(37.5765);
-        location.setLongitude(126.9880);
-        return location;
-    }
-
-    //카메라 권한 요청
-    private void requestCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-        } else {
-            openCamera();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this, "카메라 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    //카메라 열기 및 파일 저장 위치 지정
-    private void openCamera() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            try {
-                photoFile = createImageFile();
-                if (photoFile != null) {
-                    photoURI = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    //이미지 파일 미리보기 생성
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
-    }
-
-    //사진 촬영 후 보상 처리 및 버튼 설정
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            imagePreview.setImageURI(photoURI);
-            buttonTakePhoto.setText("보상 받기");
-            buttonTakePhoto.setOnClickListener(v -> {
-                Toast.makeText(this, "보상을 받았습니다!", Toast.LENGTH_SHORT).show();
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("questResult", "success");
-                setResult(RESULT_OK, resultIntent);
-                finish();
-            });
-        }
-    }
 
     private void loadQuestProgressFromServer() {
         SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
@@ -333,6 +265,125 @@ public class Tab3Activity extends AppCompatActivity {
                     claimButtons[8].setEnabled(true);
                 }
             }
+        }
+    }
+
+    // ====== 카메라 퀘스트 ======
+    private void setupActivityResultLaunchers() {
+        // 카메라 권한 요청
+        requestCameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        capturePhoto();
+                    } else {
+                        Toast.makeText(this, "카메라 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        // 사진 촬영 (URI로 저장)
+        takePictureLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                success -> {
+                    if (success && photoURI != null) {
+                        // 촬영 성공 → 미리보기 화면으로 이동
+                        Intent intent = new Intent(this, PhotoPreviewActivity.class);
+                        intent.putExtra("photoUri", photoURI);
+                        intent.putExtra("questNumber", currentPhotoQuestNumber);
+                        previewLauncher.launch(intent);
+                    } else {
+                        Toast.makeText(this, "사진 촬영이 취소되었습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        // PhotoPreviewActivity 결과 수신 (보상 성공 여부)
+        previewLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Intent data = result.getData();
+                        String status = data.getStringExtra("rewardResult");
+                        int qn = data.getIntExtra("questNumber", -1);
+                        if ("success".equals(status) && (qn == 101 || qn == 102)) {
+                            // UI 업데이트 (상자 열림 + 진행바 100% + 버튼 비활성화)
+                            handleCameraQuestRewardUI(qn);
+
+                            // 서버에 보상 수령 요청 (기존 메서드 재사용)
+                            claimQuest(qn);
+                        }
+                    }
+                }
+        );
+    }
+
+    //카메라 권한 확인 후 촬영 실행
+    private void ensureCameraPermissionThenCapture() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            capturePhoto();
+        } else {
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    // 사진 촬영 실행 (ACTION_IMAGE_CAPTURE + FileProvider)
+    private void capturePhoto() {
+        try {
+            photoFile = createImageFile();
+            photoURI = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+            takePictureLauncher.launch(photoURI);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "사진 파일 생성 실패", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 이미지 파일 생성 (기존 로직 유지)
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    }
+
+    //보상 성공 시 UI 업데이트 (신규)
+    private void handleCameraQuestRewardUI(int questNumber) {
+        try {
+            int boxId;
+            int progressId;
+            int btnId;
+
+            // P1(24), P2(25) 매핑
+            if (questNumber == 101) {
+                boxId = R.id.boxRewardP1;
+                progressId = R.id.progressQuestP1;
+                btnId = R.id.btnClaimP1;
+            } else {
+                boxId = R.id.boxRewardP2;
+                progressId = R.id.progressQuestP2;
+                btnId = R.id.btnClaimP2;
+            }
+
+            ImageView box = findViewById(boxId);
+            if (box != null) {
+                box.setImageResource(R.drawable.box_opened);
+                Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_open);
+                box.startAnimation(fadeIn);
+            }
+
+            ProgressBar pb = findViewById(progressId);
+            if (pb != null) pb.setProgress(100);
+
+            Button btn = findViewById(btnId);
+            if (btn != null) {
+                btn.setEnabled(false);
+                btn.setText("완료");
+            }
+
+            Toast.makeText(this, "퀘스트 " + questNumber + " 보상을 받았습니다!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e("CameraQuestUI", "UI update failed: " + e.getMessage());
         }
     }
 }
