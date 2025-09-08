@@ -240,61 +240,94 @@
         android:elevation="10dp"
         android:clipToPadding="false"
         android:backgroundTint="#FFFFFF"
-        android:backgroundTintMode="src_in"
-        android:weightSum="5"
-        android:gravity="center">
+        android:backgroundTintMode="src_in">
 
-        <ImageButton
-            android:id="@+id/tab1Button"
+        <!-- 탭 버튼들 (메인과 동일하게 5개, 각 칸에 컨테이너 + 45dp 아이콘) -->
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_home"
-            android:background="@drawable/bottom_tab_selector"
-            android:contentDescription="탭 1" />
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab1Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_home"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="홈"
+                android:elevation="2dp" />
+        </LinearLayout>
 
-        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
-
-        <ImageButton
-            android:id="@+id/tab2Button"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_running"
-            android:background="@drawable/bottom_tab_selector"
-            android:contentDescription="탭 2" />
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab2Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_running"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="러닝"
+                android:elevation="2dp" />
+        </LinearLayout>
 
-        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
-
-        <ImageButton
-            android:id="@+id/tab3Button"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/bottom_tab_selector"
-            android:contentDescription="탭 3"
-            android:src="@drawable/ic_quest" />
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab3Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_quest"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="퀘스트"
+                android:elevation="2dp" />
+        </LinearLayout>
 
-        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
-
-        <ImageButton
-            android:id="@+id/tab4Button"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_inventory"
-            android:background="@drawable/bottom_tab_selector"
-            android:contentDescription="탭 4" />
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab4Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_inventory"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="인벤토리"
+                android:elevation="2dp" />
+        </LinearLayout>
 
-        <Space android:layout_width="16dp" android:layout_height="wrap_content" />
-
-        <ImageButton
-            android:id="@+id/tab6Button"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_mypage"
-            android:background="@drawable/bottom_tab_selector"
-            android:contentDescription="탭 6" />
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab6Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_mypage"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="마이페이지"
+                android:elevation="2dp" />
+        </LinearLayout>
+
     </LinearLayout>
+
 </RelativeLayout>

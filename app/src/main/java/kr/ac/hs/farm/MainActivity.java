@@ -1,12 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// MainActivity.java  (풀버전)
-// - 울타리(펜스) 게이트: 기존 방식(가로 4칸 / 세로 5칸) 그대로 유지 (fence_gates)
-// - 집/목장 구조물 문: door_animation_sprites 사용
-//   * 1행(row 0): 집 문 16×16, 프레임 6개 (0=활짝 열림 → 5=완전 닫힘)
-//   * 2행(row 1): 목장 구조물 문 48×16 (16×16×3칸), 프레임 6개
-// - 기존 배치/연결/저장 로직 유지
-// - 추가: 캐릭터 근접 시 울타리 게이트 자동 개폐(히스테리시스 포함)
-// - 추가: 캐릭터 근접 시 집/목장 문 자동 개폐(히스테리시스 포함, 반경 고정)
+// MainActivity.java (풀버전, 지붕 엔진 제거 + 문은 목장 전용으로 단순화 + 크래시/재설치 버그 패치)
+// - 변경점 요약:
+//   1) 저장 키 안전화: getOrMakeItemKey(), safePutString() 추가.
+//   2) saveAppliedItems()/restoreAppliedItems()가 항상 유효 키 사용.
+//   3) onNewIntent() 추가 + processIncomingIntent()로 인텐트 재처리(인벤토리에서 여러 번 설치 가능).
+//   4) saveData() 커밋 순서 정리(우선 apply, 이후 saveAppliedItems)로 안정성 보강.
+// - 기존 기능:
+//   * 울타리(펜스) 게이트: 가로 4칸/세로 5칸, 자동 개폐(히스테리시스) 유지
+//   * 구조물(집/목장 공용) 벽/바닥 엔진 유지(지붕 엔진은 완전 삭제)
+//   * 문 애니: door_animation_sprites 의 2행(목장 전용, 48×16=3칸, 6프레임)만 사용
+//     · 구버전 저장본(HOUSE 1칸 문)은 복원 시 자동으로 3칸 목장 문으로 이주
 // ─────────────────────────────────────────────────────────────────────────────
 package kr.ac.hs.farm;
 
@@ -29,7 +32,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -44,7 +46,7 @@ import java.util.HashSet;
 import java.util.Map;
 import android.view.MotionEvent;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String PREFS_NAME = "FarmPrefs";
     private static final String KEY_FOOD_COUNT = "foodCount";
@@ -74,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
     private int cameraLeft = 0, cameraTop = 0;
 
+    private View inputBlocker;
+
     // Grid
     public static final int GRID_PX = 64;
     private int fenceDisplaySizePx = 64;
@@ -83,90 +87,78 @@ public class MainActivity extends AppCompatActivity {
     private FenceAtlas fenceAtlas;
     private LinearLayout fenceModeBar;
 
-    // ★ 목장 문 배치 토글/버퍼(= 펜스 설치 모드의 '문 위치' 표식용)
+    // 펜스 설치 모드의 '문 위치' 표식용
     private boolean ranchDoorPlacementOn = false;
     private final HashSet<Point> ranchDoorCellsBuffer = new HashSet<>();
 
-    // House walls / Ranch structure walls
+    // 구조물(벽/바닥) 설치
     private FencePlacerOverlay houseOverlay;
+    // 바닥(걸을 수 있는 셀) 모음
+    private final java.util.HashSet<android.graphics.Point> ranchFloorCells = new java.util.HashSet<>();
     private HouseAtlas houseAtlas;
     private LinearLayout houseModeBar;
 
-    // ★ 집/구조물 문 배치 토글/버퍼(= 벽 설치 모드의 문 위치 표식용)
+    // 구조물 문 위치 표식용
     private boolean houseDoorPlacementOn = false;
     private final HashSet<Point> houseDoorCellsBuffer = new HashSet<>();
 
-    // ──[ 울타리 게이트용 태그(기존 유지) ]────────────────────────────────────────
-    private static final int TAG_KEY_GATE = 0x7f0A0001;  // Boolean: 게이트 여부
-    private static final int TAG_KEY_GATE_FRAME = 0x7f0A0002;  // Integer 0..4
-    private static final int TAG_KEY_GATE_OPENING = 0x7f0A0003;  // Boolean
-    private static final int TAG_KEY_GATE_LISTENER = 0x7f0A0004;  // Boolean
-    private static final int TAG_KEY_GATE_VERTICAL = 0x7f0A0005;  // Boolean: 세로 게이트?
-    private static final int TAG_KEY_GATE_GROUP = 0x7f0A0006;  // String: 그룹 ID
-    private static final int TAG_KEY_GATE_SLICE = 0x7f0A0007;  // Integer: 조각 index(가로 0..3 / 세로 0..4)
+    // ──[ 울타리 게이트 태그 ]──────────────────────────────────────────────
+    private static final int TAG_KEY_GATE = 0x7f0A0001;      // Boolean
+    private static final int TAG_KEY_GATE_FRAME = 0x7f0A0002;// Integer 0..4
+    private static final int TAG_KEY_GATE_OPENING = 0x7f0A0003; // Boolean
+    private static final int TAG_KEY_GATE_LISTENER = 0x7f0A0004; // Boolean
+    private static final int TAG_KEY_GATE_VERTICAL = 0x7f0A0005; // Boolean
+    private static final int TAG_KEY_GATE_GROUP = 0x7f0A0006;    // String
+    private static final int TAG_KEY_GATE_SLICE = 0x7f0A0007;    // Integer
 
-    // ──[ 집/목장 구조물 '문' 태그(신규 애니) ]─────────────────────────────────
-    private static final int TAG_IS_DOOR = 0x7f0A1001; // Boolean
-    private static final int TAG_DOOR_TYPE = 0x7f0A1002; // String "RANCH" | "HOUSE"
-    private static final int TAG_DOOR_GROUP = 0x7f0A1003; // String
-    private static final int TAG_DOOR_SLICE = 0x7f0A1004; // Integer (RANCH: 0..2, HOUSE: 0)
-    private static final int TAG_DOOR_FRAME = 0x7f0A1005; // Integer 0..5
-    private static final int TAG_DOOR_LISTENER = 0x7f0A1006; // Boolean
+    // ──[ 구조물 '문'(목장 전용) 태그 ]──────────────────────────────────────
+    private static final int TAG_IS_DOOR = 0x7f0A1001;   // Boolean
+    private static final int TAG_DOOR_GROUP = 0x7f0A1003;// String
+    private static final int TAG_DOOR_SLICE = 0x7f0A1004;// Integer 0..2
+    private static final int TAG_DOOR_FRAME = 0x7f0A1005;// Integer 0..5
+    private static final int TAG_DOOR_LISTENER = 0x7f0A1006;// Boolean
 
-    // ──[ 울타리 게이트 스프라이트(기존 유지) ]────────────────────────────────
+    // ──[ 울타리 게이트 스프라이트 ]───────────────────────────────────────
     private Bitmap gateSheet;
     private Bitmap[][] gateHFrameSlices; // [frame 0..4][slice 0..3]
     private Bitmap[][] gateVFrameSlices; // [frame 0..4][slice 0..2]
 
-    // ──[ 집/목장 구조물 문 스프라이트(신규 애니) ]────────────────────────────
+    // ──[ 문 스프라이트(목장 전용) ]────────────────────────────────────────
     private static final int DOOR_FRAMES = 6;
     private Bitmap doorSheet;
-    private Bitmap[] houseDoorFrames;          // [0..5]
     private Bitmap[][] ranchDoorFrameSlices;    // [0..5][slice 0..2]
 
-    // 집/구조물 설치 모드가 '목장(축사/외양간)'인지 여부
-    private boolean isRanchBuild = false;
+    private boolean isRanchBuild = true; // 구조물 모드는 기본적으로 목장 취급
 
     private final Handler ui = new Handler(Looper.getMainLooper());
 
     // ===== 자동 개폐 파라미터(히스테리시스) =====
-    private static final float GATE_OPEN_RADIUS_PX = 90f;  // 이내로 들어오면 '열기' 목표
-    private static final float GATE_CLOSE_RADIUS_PX = 120f; // 이 밖으로 나가면 '닫기' 목표
+    private static final float GATE_OPEN_RADIUS_PX = 90f;
+    private static final float GATE_CLOSE_RADIUS_PX = 120f;
 
-    // ★ 문(집/목장) 자동 개폐 반경(요청값)
-    private static final float HOUSE_DOOR_OPEN_RADIUS = 70f;
-    private static final float HOUSE_DOOR_CLOSE_RADIUS = 95f;
+    // 문(목장) 자동 개폐 반경
     private static final float RANCH_DOOR_OPEN_RADIUS = 80f;
     private static final float RANCH_DOOR_CLOSE_RADIUS = 105f;
     private static final long DOOR_AUTOCHECK_INTERVAL_MS = 120L;
 
     // 자동 게이트 루프
     private final Runnable gateAutoLoop = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                updateGateAutoOpenClose();
-            } catch (Throwable ignored) {
-            }
-            ui.postDelayed(this, 90); // ~11 FPS
+        @Override public void run() {
+            try { updateGateAutoOpenClose(); } catch (Throwable ignored) {}
+            ui.postDelayed(this, 90);
         }
     };
 
     // 문 자동 체크용 상태/루프
     private static final class DoorGroupState {
-        float cx, cy;      // 그룹 중심 좌표(월드)
-        boolean isOpen;    // 현재 열림 상태(프레임 기준)
-        String type;       // "HOUSE" | "RANCH"
+        float cx, cy;   // 그룹 중심 좌표(월드)
+        boolean isOpen; // 현재 열림 상태
     }
 
     private final HashMap<String, DoorGroupState> doorGroups = new HashMap<>();
     private final Runnable doorAutoCheck = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                autoCheckDoors();
-            } catch (Throwable ignored) {
-            }
+        @Override public void run() {
+            try { autoCheckDoors(); } catch (Throwable ignored) {}
             ui.postDelayed(this, DOOR_AUTOCHECK_INTERVAL_MS);
         }
     };
@@ -175,13 +167,46 @@ public class MainActivity extends AppCompatActivity {
         return Math.round(getResources().getDisplayMetrics().density * v);
     }
 
+    /** 빌드 관련 UI가 하나라도 켜져 있으면 입력 차단 ON/OFF */
+    private void updateCharacterLock() {
+        boolean shouldLock =
+                fenceOverlay != null ||
+                        houseOverlay != null ||
+                        fenceDeleteSelectOn ||
+                        houseDeleteSelectOn;
+
+        if (shouldLock) enableInputBlocker();
+        else disableInputBlocker();
+    }
+
+    private void enableInputBlocker() {
+        if (inputBlocker != null) return;
+        inputBlocker = new View(this);
+        inputBlocker.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        inputBlocker.setClickable(true);
+        inputBlocker.setFocusable(true);
+        // 모든 터치를 흡수해서 spriteView/배경으로 이벤트가 내려가지 않게 함
+        inputBlocker.setOnTouchListener((v, e) -> true);
+
+        // spriteView는 farmArea의 0번에 추가됨. blocker는 그 위(인덱스 1)에 올려줌.
+        farmArea.addView(inputBlocker, 1);
+    }
+
+    private void disableInputBlocker() {
+        if (inputBlocker == null) return;
+        farmArea.removeView(inputBlocker);
+        inputBlocker = null;
+    }
+
     private void shrinkButton(Button b) {
         b.setMinWidth(0);
         b.setPadding(dp(10), dp(6), dp(10), dp(6));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.bottomMargin = dp(6); // 버튼 사이 간격
+        lp.bottomMargin = dp(6);
         b.setLayoutParams(lp);
     }
 
@@ -194,7 +219,53 @@ public class MainActivity extends AppCompatActivity {
     // 삭제 모드 임시 태그
     private static final int TAG_TMP_DELETE_MODE = 0x7f0A2001;
 
-    private static final int ID_TOOLBAR_PANEL = 0x7f0B0010; // 임의 고유값
+    private static final int ID_TOOLBAR_PANEL = 0x7f0B0010;
+
+    // ─────────────────────────────────────────────────────────────────────
+    // [추가] 항상 유효한 저장 키/안전 저장 유틸
+    // ─────────────────────────────────────────────────────────────────────
+    private String getOrMakeItemKey() {
+        String userId = getCurrentUserId();
+        if (userId != null && !userId.trim().isEmpty()) {
+            return "appliedItems_" + userId;
+        }
+        // 로그인 전/ID 미설정 대비용 게스트 키
+        return "appliedItems_guest";
+    }
+
+    private void safePutString(SharedPreferences p, String key, String value) {
+        if (key == null || key.trim().isEmpty()) return;
+        p.edit().putString(key, value).apply();
+    }
+
+    private void bringHeroOverlayToFront() {
+        View hero = null;
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View v = farmArea.getChildAt(i);
+            if (v instanceof HeroOverlayView) { hero = v; break; }
+        }
+        if (hero != null) hero.bringToFront();
+    }
+
+    // ──[ 레벨 해금 로직 상수 ]──────────────────────────────────────────────
+    private static final String KEY_UNLOCK_COUNT = "unlockCount"; // 지금까지 해금된 단계 수(0~10)
+
+    // 해금 순서(총 10개): 10레벨마다 하나씩, 순서대로
+    private static final String[] UNLOCK_KEYS = new String[]{
+            // 농장
+            "farm_crops", "farm_decor", "farm_gather", "farm_picnic", "farm_struct",
+            // 목장
+            "ranch_animals", "ranch_breeding", "ranch_furniture", "ranch_struct",
+            // 배경
+            "backgrounds"
+    };
+    // UI 토스트용 라벨(한국어)
+    private static final String[] UNLOCK_LABELS = new String[]{
+            "농장 · 농작물", "농장 · 장식물", "농장 · 채집", "농장 · 피크닉", "농장 · 구조물",
+            "목장 · 동물", "목장 · 사육", "목장 · 가구", "목장 · 구조물",
+            "배경"
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,6 +281,8 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
+        migrateAppliedItemsKeysOnce();
+
         characterButton = findViewById(R.id.characterButton);
         characterMenu = findViewById(R.id.characterMenu);
         feedButton = findViewById(R.id.feedButton);
@@ -221,6 +294,8 @@ public class MainActivity extends AppCompatActivity {
         resetButton = findViewById(R.id.resetButton);
 
         loadData();
+        migrateUserScopedProgressOnce(); // 선택
+        applyLevelUnlocksIfNeeded(false);
         characterButton.setVisibility(View.GONE);
 
         spriteView = new SpriteView(this);
@@ -245,12 +320,22 @@ public class MainActivity extends AppCompatActivity {
         feedButton.setOnClickListener(v -> giveFood());
         exitButton.setOnClickListener(v -> showExitDialog());
 
+        ImageButton tab1 = findViewById(R.id.tab1Button);
+        ImageButton tab2 = findViewById(R.id.tab2Button);
+        ImageButton tab3 = findViewById(R.id.tab3Button);
+        ImageButton tab4 = findViewById(R.id.tab4Button);
+        ImageButton tab6 = findViewById(R.id.tab6Button);
+
+        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
+        updateBottomBarUI(R.id.tab1Button);
+
         findViewById(R.id.tab1Button).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.tab2Button).setOnClickListener(v -> startActivity(new Intent(this, Tab2Activity.class)));
         findViewById(R.id.tab3Button).setOnClickListener(v -> startActivity(new Intent(this, Tab3Activity.class)));
         findViewById(R.id.tab4Button).setOnClickListener(v -> startActivity(new Intent(this, Tab4Activity.class)));
         findViewById(R.id.tab6Button).setOnClickListener(v -> startActivity(new Intent(this, Tab6Activity.class)));
 
+        // 보상 아이템 반영
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("reward")) {
             int reward = intent.getIntExtra("reward", 0);
@@ -261,20 +346,9 @@ public class MainActivity extends AppCompatActivity {
 
         updateUI();
         restoreAppliedItems();
-        applyInventoryItem(intent);
 
-        // ==== 툴 모드 진입 ====
-        boolean needFenceMode = intent != null && intent.getBooleanExtra("applyFenceTool", false);
-        if (needFenceMode) {
-            int atlasResId = intent.getIntExtra("fenceAtlasResId", R.drawable.fences);
-            enterFenceMode(atlasResId);
-        }
-        boolean needHouseMode = intent != null && intent.getBooleanExtra("applyHouseTool", false);
-        if (needHouseMode) {
-            int atlasResId = intent.getIntExtra("houseAtlasResId", R.drawable.wooden_house_walls);
-            String okText = intent.getStringExtra("toolOkText");
-            enterHouseMode(atlasResId, okText);
-        }
+        // (수정) 인텐트 설치 지시와 툴 모드 진입 로직은 메서드로 분리 후 호출
+        processIncomingIntent(intent);
 
         findViewById(R.id.editModeButton).setOnClickListener(v -> {
             setEditMode(true);
@@ -290,6 +364,7 @@ public class MainActivity extends AppCompatActivity {
                         saveAppliedItems();
                         exitFenceMode();
                         exitHouseMode();
+                        pushWalkableToSprite();
                         Toast.makeText(this, "수정이 완료되었습니다!", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("아니오", null)
@@ -305,8 +380,8 @@ public class MainActivity extends AppCompatActivity {
                             View child = farmArea.getChildAt(i);
                             if (child instanceof SelectableItemView) farmArea.removeViewAt(i);
                         }
-                        String key = getItemKey();
-                        if (key != null) prefs.edit().remove(key).apply();
+                        // (수정) 항상 유효 키 사용
+                        prefs.edit().remove(getOrMakeItemKey()).apply();
 
                         SharedPreferences sp = getSharedPreferences("SpritePrefs", MODE_PRIVATE);
                         String userId = getCurrentUserId();
@@ -314,6 +389,8 @@ public class MainActivity extends AppCompatActivity {
                         sp.edit().putInt(bgKey, R.drawable.tiles_grass).apply();
 
                         spriteView.reloadBackground();
+                        ranchFloorCells.clear();
+                        pushWalkableToSprite();
                         spriteView.resetPositionToCenter();
                         applyWorldBoundsToAnimals();
                         Toast.makeText(this, "인테리어가 모두 초기화되었습니다.", Toast.LENGTH_SHORT).show();
@@ -324,26 +401,78 @@ public class MainActivity extends AppCompatActivity {
 
         applyWorldBoundsToAnimals();
 
-        // ★ 자동 게이트 루프 시작
         ui.postDelayed(gateAutoLoop, 300);
-
-        // ★ 문 자동 체크 초기화
         rebuildDoorGroups();
         ui.postDelayed(doorAutoCheck, 200);
+
+        // 1) SpriteView는 배경만 그리게 전환
+        spriteView.setDrawHero(false);
+
+        // 2) 캐릭터만 그리는 오버레이를 맨 위로 올림
+        HeroOverlayView heroLayer = new HeroOverlayView(this, spriteView);
+        FrameLayout.LayoutParams heroLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        farmArea.addView(heroLayer, farmArea.getChildCount()); // 항상 최상단
+    }
+
+    // 한 번만 키 이관(이미 타깃 키가 있으면 스킵)
+    private void migrateAppliedItemsKeysOnce() {
+        try {
+            String userId = getCurrentUserId();
+            String targetKey = getOrMakeItemKey(); // guest 또는 appliedItems_{id}
+
+            // 이미 타깃 키가 있다면 종료
+            if (prefs.contains(targetKey)) return;
+
+            // 구버전/게스트 키 중 존재하는 것을 우선순위로 가져와서 타깃키로 복사
+            String legacy = prefs.getString("appliedItems", null);
+            String guest  = prefs.getString("appliedItems_guest", null);
+
+            String src = (legacy != null && legacy.length() > 2) ? legacy
+                    : (guest  != null && guest.length()  > 2) ? guest
+                    : null;
+
+            if (src != null) safePutString(prefs, targetKey, src);
+        } catch (Throwable ignored) {}
+    }
+
+    // (추가) 새 인텐트도 처리: 인벤토리에서 같은 화면으로 여러 번 설치 가능
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        processIncomingIntent(intent);
+    }
+
+    // (추가) 인텐트 처리 공통 메서드
+    private void processIncomingIntent(Intent intent) {
+        if (intent == null) return;
+
+        // 인벤토리에서 던진 단일 아이템 설치
+        applyInventoryItem(intent);
+
+        // 툴 모드 진입 플래그 (울타리 / 구조물)
+        boolean needFenceMode = intent.getBooleanExtra("applyFenceTool", false);
+        if (needFenceMode) {
+            int atlasResId = intent.getIntExtra("fenceAtlasResId", R.drawable.fences);
+            enterFenceMode(atlasResId);
+        }
+        boolean needHouseMode = intent.getBooleanExtra("applyHouseTool", false);
+        if (needHouseMode) {
+            int atlasResId = intent.getIntExtra("houseAtlasResId", R.drawable.wooden_house_walls);
+            String okText = intent.getStringExtra("toolOkText");
+            enterHouseMode(atlasResId, okText);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         if (spriteView != null) spriteView.saveCharacterPosition();
-        if (fenceAtlas != null) {
-            fenceAtlas.dispose();
-            fenceAtlas = null;
-        }
-        if (houseAtlas != null) {
-            houseAtlas.dispose();
-            houseAtlas = null;
-        }
+        if (fenceAtlas != null) { fenceAtlas.dispose(); fenceAtlas = null; }
+        if (houseAtlas != null) { houseAtlas.dispose(); houseAtlas = null; }
 
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
@@ -353,7 +482,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // ★ 자동 루프 중단
         ui.removeCallbacks(gateAutoLoop);
         ui.removeCallbacks(doorAutoCheck);
         ui.removeCallbacksAndMessages(null);
@@ -366,20 +494,20 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (child instanceof SelectableSpriteItemView) {
-                ((SelectableSpriteItemView) child).startAnim();
-                if (!isEditMode) ((SelectableSpriteItemView) child).enableWander(farmArea);
+                SelectableSpriteItemView av = (SelectableSpriteItemView) child;
+                av.startAnim();
+                if (!isEditMode) av.enableWander(farmArea);
             }
         }
         applyCameraToAllItems();
         applyWorldBoundsToAnimals();
 
-        // ★ 자동 루프 재시작
         ui.removeCallbacks(gateAutoLoop);
         ui.postDelayed(gateAutoLoop, 300);
-
         rebuildDoorGroups();
         ui.removeCallbacks(doorAutoCheck);
         ui.postDelayed(doorAutoCheck, 200);
+        updateCharacterLock();
     }
 
     private String getCurrentUserId() {
@@ -388,6 +516,13 @@ public class MainActivity extends AppCompatActivity {
                 ? loginPrefs.getString("id", null) : null;
     }
 
+    /** 사용자별로 키 네임스페이스를 부여한다. (게스트 포함) */
+    private String scopedKey(String base) {
+        String uid = getCurrentUserId();
+        return base + "_" + (uid != null && !uid.trim().isEmpty() ? uid : "guest");
+    }
+
+    // (기존) null을 돌려줄 수 있어 크래시 원인 → 사용처를 getOrMakeItemKey()로 교체
     private String getItemKey() {
         String userId = getCurrentUserId();
         return userId != null ? "appliedItems_" + userId : null;
@@ -407,6 +542,7 @@ public class MainActivity extends AppCompatActivity {
                 level++;
                 experience -= MAX_EXPERIENCE;
                 Toast.makeText(this, "레벨업! 현재 레벨: " + level, Toast.LENGTH_SHORT).show();
+                applyLevelUnlocksIfNeeded(true);
             }
             updateUI();
             saveData();
@@ -424,22 +560,42 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveData() {
         SharedPreferences.Editor ed = prefs.edit();
-        ed.putInt(KEY_FOOD_COUNT, foodCount);
-        ed.putInt(KEY_LEVEL, level);
-        ed.putInt(KEY_EXPERIENCE, experience);
-        saveAppliedItems();
+        ed.putInt(scopedKey(KEY_FOOD_COUNT), foodCount);
+        ed.putInt(scopedKey(KEY_LEVEL), level);
+        ed.putInt(scopedKey(KEY_EXPERIENCE), experience);
         ed.apply();
+        saveAppliedItems(); // 인테리어는 기존처럼
     }
 
     private void loadData() {
-        foodCount = prefs.getInt(KEY_FOOD_COUNT, 3);
-        level = prefs.getInt(KEY_LEVEL, 1);
-        experience = prefs.getInt(KEY_EXPERIENCE, 0);
+        foodCount  = prefs.getInt(scopedKey(KEY_FOOD_COUNT), 3);
+        level      = prefs.getInt(scopedKey(KEY_LEVEL), 1);
+        experience = prefs.getInt(scopedKey(KEY_EXPERIENCE), 0);
+
+        // 로그인 안 한 사용자라면 무조건 LV0으로 고정
+        if (getCurrentUserId() == null) {
+            level = 0;
+            experience = 0; // 경험치도 초기화
+            // 원하면 foodCount도 기본값으로 맞춰줄 수 있음
+            foodCount = 0;
+        }
+    }
+
+    private void migrateUserScopedProgressOnce() {
+        String lvKeyOld = KEY_LEVEL, lvKeyNew = scopedKey(KEY_LEVEL);
+        if (!prefs.contains(lvKeyNew) && prefs.contains(lvKeyOld)) {
+            SharedPreferences.Editor ed = prefs.edit();
+            ed.putInt(lvKeyNew, prefs.getInt(lvKeyOld, 1));
+            ed.putInt(scopedKey(KEY_FOOD_COUNT), prefs.getInt(KEY_FOOD_COUNT, 3));
+            ed.putInt(scopedKey(KEY_EXPERIENCE), prefs.getInt(KEY_EXPERIENCE, 0));
+            ed.remove(lvKeyOld).remove(KEY_FOOD_COUNT).remove(KEY_EXPERIENCE).apply();
+        }
     }
 
     // ===== 저장 복원 =====
     private void restoreAppliedItems() {
-        String key = getItemKey();
+        // (수정) 항상 유효 키 사용
+        String key = getOrMakeItemKey();
         if (key == null) return;
 
         int[] cam = spriteView != null ? spriteView.computeCurrentCameraLT() : new int[]{cameraLeft, cameraTop};
@@ -477,7 +633,7 @@ public class MainActivity extends AppCompatActivity {
 
                 boolean isFence = obj.optBoolean("isFence", false);
                 boolean isDoor = obj.optBoolean("isDoor", false);
-                boolean isGate = obj.optBoolean("isGate", false); // 구버전/게이트 복원
+                boolean isGate = obj.optBoolean("isGate", false);
 
                 if (isFence) {
                     int atlasResId = obj.optInt("fenceAtlasResId", R.drawable.fences);
@@ -513,15 +669,13 @@ public class MainActivity extends AppCompatActivity {
                         fv.setTag(TAG_KEY_GATE_OPENING, obj.optBoolean("gateOpening", false));
                     }
 
-                    // 문(집/구조물) 복원
+                    // 문 복원(항상 목장 3칸으로 이주/정규화)
                     if (isDoor) {
                         fv.setTag(TAG_IS_DOOR, Boolean.TRUE);
-                        fv.setTag(TAG_DOOR_GROUP, obj.optString("doorGroup", gx + "," + gy));
+                        String gid = obj.optString("doorGroup", gx + "," + gy);
+                        fv.setTag(TAG_DOOR_GROUP, gid);
                         fv.setTag(TAG_DOOR_SLICE, obj.optInt("doorSlice", 0));
-                        fv.setTag(TAG_DOOR_FRAME, obj.optInt("doorFrame", 5)); // 기본 5(닫힘)로 보정
-                        String type = obj.optString("doorType", null);
-                        if (type == null) type = isHouseAtlas(atlasResId) ? "HOUSE" : "RANCH";
-                        fv.setTag(TAG_DOOR_TYPE, type);
+                        fv.setTag(TAG_DOOR_FRAME, clamp(obj.optInt("doorFrame", 5), 0, DOOR_FRAMES - 1));
                     }
 
                     fv.setEditEnabled(isEditMode);
@@ -545,15 +699,82 @@ public class MainActivity extends AppCompatActivity {
         recalcAllGridMasks();
         applyCameraToAllItems();
         applyWorldBoundsToAnimals();
+        rebuildWalkableFromViews();
     }
 
+    // 기존 saveAppliedItems() 전체 교체
     private void saveAppliedItems() {
-        String key = getItemKey();
+        String key = getOrMakeItemKey(); // 항상 유효 키
         if (key == null) return;
 
         JSONArray array = new JSONArray();
+
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
+
+            // 1) 울타리/벽/문/게이트 (SelectableFenceView)
+            if (child instanceof SelectableFenceView) {
+                SelectableFenceView v = (SelectableFenceView) child;
+                try {
+                    JSONObject obj = new JSONObject();
+
+                    // fence도 resId 필드는 필요(restore에서 getInt로 읽음) → 0으로 채움
+                    obj.put("resId", 0);
+
+                    obj.put("worldX", v.getWorldX());
+                    obj.put("worldY", v.getWorldY());
+                    obj.put("x", v.getX());
+                    obj.put("y", v.getY());
+                    obj.put("width", GRID_PX);
+                    obj.put("height", GRID_PX);
+                    obj.put("rotation", v.getRotation());
+
+                    // fence 플래그 + 마스크/아틀라스/그리드 좌표
+                    Integer fenceMask = v.getFenceMaskTag();
+                    int atlasResId = v.getAtlasResId();
+                    Integer gxTag = v.getFenceGridXTag();
+                    Integer gyTag = v.getFenceGridYTag();
+
+                    obj.put("isFence", true);
+                    obj.put("fenceMask", fenceMask == null ? 0 : fenceMask);
+                    obj.put("fenceAtlasResId", atlasResId);
+                    if (gxTag != null) obj.put("gridX", gxTag);
+                    if (gyTag != null) obj.put("gridY", gyTag);
+
+                    // 게이트 태그들
+                    if (Boolean.TRUE.equals(v.getTag(TAG_KEY_GATE))) {
+                        obj.put("isGate", true);
+                        Object grp = v.getTag(TAG_KEY_GATE_GROUP);
+                        if (grp != null) obj.put("gateGroup", grp.toString());
+                        Object sl = v.getTag(TAG_KEY_GATE_SLICE);
+                        if (sl instanceof Integer) obj.put("gateSlice", (Integer) sl);
+                        Object fr = v.getTag(TAG_KEY_GATE_FRAME);
+                        if (fr instanceof Integer) obj.put("gateFrame", (Integer) fr);
+                        Object vt = v.getTag(TAG_KEY_GATE_VERTICAL);
+                        if (vt instanceof Boolean) obj.put("gateVertical", (Boolean) vt);
+                        Object op = v.getTag(TAG_KEY_GATE_OPENING);
+                        if (op instanceof Boolean) obj.put("gateOpening", (Boolean) op);
+                    }
+
+                    // 문(목장 전용) 태그들
+                    if (Boolean.TRUE.equals(v.getTag(TAG_IS_DOOR))) {
+                        obj.put("isDoor", true);
+                        Object grp = v.getTag(TAG_DOOR_GROUP);
+                        if (grp != null) obj.put("doorGroup", grp.toString());
+                        Object sl = v.getTag(TAG_DOOR_SLICE);
+                        if (sl instanceof Integer) obj.put("doorSlice", (Integer) sl);
+                        Object fr = v.getTag(TAG_DOOR_FRAME);
+                        if (fr instanceof Integer) obj.put("doorFrame", (Integer) fr);
+                    }
+
+                    array.put(obj);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+
+            // 2) 일반 아이템/동물 (SelectableItemView)
             if (child instanceof SelectableItemView) {
                 SelectableItemView v = (SelectableItemView) child;
                 try {
@@ -567,6 +788,7 @@ public class MainActivity extends AppCompatActivity {
                     obj.put("height", v.getHeight());
                     obj.put("rotation", v.getRotation());
 
+                    // fence 마스크가 달려있는 특수 케이스도 대비
                     Integer fenceMask = v.getFenceMaskTag();
                     Integer atlasTag = v.getAtlasResIdTag();
                     Integer gxTag = v.getFenceGridXTag();
@@ -578,7 +800,6 @@ public class MainActivity extends AppCompatActivity {
                         if (gxTag != null) obj.put("gridX", gxTag);
                         if (gyTag != null) obj.put("gridY", gyTag);
 
-                        // 게이트 저장(울타리)
                         if (Boolean.TRUE.equals(v.getTag(TAG_KEY_GATE))) {
                             obj.put("isGate", true);
                             Object grp = v.getTag(TAG_KEY_GATE_GROUP);
@@ -593,7 +814,6 @@ public class MainActivity extends AppCompatActivity {
                             if (op instanceof Boolean) obj.put("gateOpening", (Boolean) op);
                         }
 
-                        // 문 저장(집/구조물)
                         if (Boolean.TRUE.equals(v.getTag(TAG_IS_DOOR))) {
                             obj.put("isDoor", true);
                             Object grp = v.getTag(TAG_DOOR_GROUP);
@@ -602,8 +822,6 @@ public class MainActivity extends AppCompatActivity {
                             if (sl instanceof Integer) obj.put("doorSlice", (Integer) sl);
                             Object fr = v.getTag(TAG_DOOR_FRAME);
                             if (fr instanceof Integer) obj.put("doorFrame", (Integer) fr);
-                            Object tp = v.getTag(TAG_DOOR_TYPE);
-                            if (tp != null) obj.put("doorType", tp.toString());
                         }
                     }
 
@@ -614,12 +832,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        SharedPreferences sp = getSharedPreferences("SpritePrefs", MODE_PRIVATE);
-        String userId = getCurrentUserId();
-        String bgKey = (userId != null) ? "selectedBackground_" + userId : "selectedBackground";
-        int bgResId = sp.getInt(bgKey, R.drawable.tiles_grass);
-        prefs.edit().putString(getItemKey(), array.toString()).apply();
-
+        safePutString(prefs, key, array.toString());
     }
 
     private void applyInventoryItem(Intent intent) {
@@ -629,14 +842,18 @@ public class MainActivity extends AppCompatActivity {
                 int[] cam = spriteView != null ? spriteView.computeCurrentCameraLT() : new int[]{cameraLeft, cameraTop};
                 float worldX = 300f + cam[0], worldY = 100f + cam[1];
 
-                if (isAnimalRes(resId))
-                    addAnimalToFarmAreaWorld(resId, worldX, worldY, 120, 120, 0f);
-                else addItemToFarmAreaWorld(resId, worldX, worldY, 120, 120, 0f);
-
-                applyCameraToAllItems();
-                applyWorldBoundsToAnimals();
-                saveAppliedItems();
-                setEditMode(true);
+                if (isAnimalRes(resId)) {
+                    int w = dp(96), h = dp(96);
+                    addAnimalToFarmAreaWorld(resId, worldX, worldY, w, h, 0f);
+                    applyCameraToAllItems();
+                    applyWorldBoundsToAnimals();
+                    saveAppliedItems();
+                } else {
+                    addItemToFarmAreaWorld(resId, worldX, worldY, 120, 120, 0f);
+                    applyCameraToAllItems();
+                    saveAppliedItems();
+                    setEditMode(true);
+                }
             }
         }
     }
@@ -664,51 +881,61 @@ public class MainActivity extends AppCompatActivity {
     private void addAnimalToFarmAreaWorld(int resId, float worldX, float worldY, int width, int height, float rotation) {
         SelectableSpriteItemView itemView = new SelectableSpriteItemView(this, resId);
         String entryName = safeEntryName(resId);
+
+        int targetW = width;
+        int targetH = height;
+        if ("chicken".equals(entryName)) {
+            targetW = dp(22);
+            targetH = dp(22);
+        } else if ("cow".equals(entryName)) {
+            targetW = dp(57);
+            targetH = dp(57);
+        }
+
         if ("chicken".equals(entryName)) {
             int rows = 13, cols = 8;
+
             int[] idleRows = new int[]{10, 11};
             int[][] ex = new int[rows][];
-            ex[0] = new int[]{5, 6, 7, 8};
-            ex[1] = new int[]{};
-            ex[2] = new int[]{};
-            ex[3] = new int[]{};
-            ex[4] = new int[]{};
-            ex[5] = new int[]{};
-            ex[6] = new int[]{};
-            ex[7] = new int[]{6, 7, 8};
-            ex[8] = new int[]{5, 6, 7, 8};
-            ex[9] = new int[]{6, 7, 8};
-            ex[10] = new int[]{5, 6, 7, 8};
-            ex[11] = new int[]{7, 8};
-            ex[12] = new int[]{3, 4, 5, 6, 7, 8};
+            ex[0]  = new int[]{5,6,7,8};
+            ex[1]  = new int[]{8};
+            ex[2]  = new int[]{};
+            ex[3]  = new int[]{8};
+            ex[4]  = new int[]{8};
+            ex[5]  = new int[]{8};
+            ex[6]  = new int[]{8};
+            ex[7]  = new int[]{6,7,8};
+            ex[8]  = new int[]{5,6,7,8};
+            ex[9]  = new int[]{6,7,8};
+            ex[10] = new int[]{5,6,7,8};
+            ex[11] = new int[]{7,8};
+            ex[12] = new int[]{3,4,5,6,7,8};
+
             boolean[][] base = makeIncludeMask(rows, cols, ex);
             boolean[][] idle = filterRows(base, rows, cols, idleRows);
             boolean[][] walk = subtractMasks(base, idle);
+
             itemView.applyDualSpriteWithMasks(R.drawable.chicken_sprites, rows, cols, 8, 6, walk, idle);
 
         } else if ("cow".equals(entryName)) {
             int rows = 7, cols = 8;
+
             int[][] ex = new int[rows][];
-            ex[0] = new int[]{4, 5, 6, 7, 8};
+            ex[0] = new int[]{4,5,6,7,8};
             ex[1] = new int[]{};
             ex[2] = new int[]{8};
-            ex[3] = new int[]{4, 5, 6, 7, 8};
-            ex[4] = new int[]{5, 6, 7, 8};
+            ex[3] = new int[]{4,5,6,7,8};
+            ex[4] = new int[]{5,6,7,8};
             ex[5] = new int[]{8};
-            ex[6] = new int[]{5, 6, 7, 8};
+            ex[6] = new int[]{5,6,7,8};
             boolean[][] base = makeIncludeMask(rows, cols, ex);
+
             boolean[][] idle = new boolean[rows][cols];
-            int r3 = 2;
-            for (int c1 : new int[]{1, 3}) {
-                int c = c1 - 1;
-                if (c >= 0 && c < cols && base[r3][c]) idle[r3][c] = true;
-            }
-            int r4 = 3;
-            for (int c = 0; c < cols; c++) if (base[r4][c]) idle[r4][c] = true;
-            int r5 = 4;
-            for (int c = 0; c < cols; c++) if (base[r5][c]) idle[r5][c] = true;
-            int r7 = 6;
-            for (int c = 0; c < cols; c++) if (base[r7][c]) idle[r7][c] = true;
+            int r3 = 2; for (int c1 : new int[]{2,4}) { int c = c1-1; if (c>=0 && c<cols && base[r3][c]) idle[r3][c] = true; }
+            int r4 = 3; for (int c=0; c<cols; c++) if (base[r4][c]) idle[r4][c] = true;
+            int r5 = 4; for (int c=0; c<cols; c++) if (base[r5][c]) idle[r5][c] = true;
+            int r7 = 6; for (int c=0; c<cols; c++) if (base[r7][c]) idle[r7][c] = true;
+
             boolean[][] walk = subtractMasks(base, idle);
             itemView.applyDualSpriteWithMasks(R.drawable.cow_sprites, rows, cols, 8, 6, walk, idle);
 
@@ -717,7 +944,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(targetW, targetH);
         itemView.setLayoutParams(params);
         itemView.setRotation(rotation);
         itemView.setCameraOffset(cameraLeft, cameraTop);
@@ -727,21 +954,14 @@ public class MainActivity extends AppCompatActivity {
         int worldH = spriteView.getWorldHeight();
         itemView.setWorldBounds(worldW, worldH);
 
-        itemView.setOnDoubleTapListener(() -> showDeleteConfirmDialog(itemView));
-        itemView.setEditEnabled(isEditMode);
-        if (isEditMode) itemView.showBorderAndButtons();
-        else itemView.hideBorderAndButtons();
+        itemView.setEditEnabled(false);
+        itemView.hideBorderAndButtons();
+
         farmArea.addView(itemView);
 
-        if (!isEditMode) {
-            itemView.enableWander(farmArea);
-            itemView.setWanderSpeed(15f);
-        }
-
-        itemView.setOnDragEndListener(v -> {
-            v.setCameraOffset(cameraLeft, cameraTop);
-            v.updateWorldFromScreen();
-        });
+        itemView.enableWander(farmArea);
+        itemView.setWanderSpeed(15f);
+        itemView.setTurnNoise(1.2f);
     }
 
     private static boolean[][] makeIncludeMask(int rows, int cols, int[][] excludedCols1Based) {
@@ -769,12 +989,13 @@ public class MainActivity extends AppCompatActivity {
         return out;
     }
 
+    // 기존 메서드 전체를 아래로 교체
     private static boolean[][] subtractMasks(boolean[][] baseMask, boolean[][] idleMask) {
         int rows = baseMask.length, cols = baseMask[0].length;
         boolean[][] out = new boolean[rows][cols];
         for (int r = 0; r < rows; r++)
             for (int c = 0; c < cols; c++)
-                out[r][c] = baseMask[r][c] && !(idleMask != null && idleMask[r][c]);
+                out[r][c] = baseMask[r][c] && !(idleMask != null && idleMask[r][c]); // ← r,c 로 교정
         return out;
     }
 
@@ -784,26 +1005,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String safeEntryName(int resId) {
-        try {
-            return getResources().getResourceEntryName(resId);
-        } catch (Exception e) {
-            return "";
-        }
+        try { return getResources().getResourceEntryName(resId); }
+        catch (Exception e) { return ""; }
     }
 
     private void setEditMode(boolean enabled) {
         isEditMode = enabled;
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
+
+            if (child instanceof SelectableSpriteItemView) {
+                SelectableSpriteItemView av = (SelectableSpriteItemView) child;
+                av.setEditEnabled(false);
+                av.hideBorderAndButtons();
+                if (!enabled) av.enableWander(farmArea);
+                continue;
+            }
+
             if (child instanceof SelectableItemView) {
                 SelectableItemView iv = (SelectableItemView) child;
                 iv.setEditEnabled(enabled);
                 if (enabled) iv.showBorderAndButtons();
                 else iv.hideBorderAndButtons();
-            }
-            if (child instanceof SelectableSpriteItemView) {
-                if (enabled) ((SelectableSpriteItemView) child).disableWander();
-                else ((SelectableSpriteItemView) child).enableWander(farmArea);
             }
         }
     }
@@ -859,6 +1082,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Sprite로 바닥 셀 전송
+    private void pushWalkableToSprite() {
+        applyWalkableSmart();
+    }
+
+    private void rebuildWalkableFromViews() {
+        ranchFloorCells.clear();
+
+        for (int i = 0; i < farmArea.getChildCount(); i++) {
+            View child = farmArea.getChildAt(i);
+            if (!(child instanceof SelectableFenceView)) continue;
+            SelectableFenceView fv = (SelectableFenceView) child;
+
+            // 1) 바닥(floor)
+            Integer mk = fv.getFenceMaskTag();
+            if (mk != null && mk > 15) {
+                Integer gx = fv.getFenceGridXTag();
+                Integer gy = fv.getFenceGridYTag();
+                if (gx != null && gy != null) {
+                    ranchFloorCells.add(new android.graphics.Point(gx, gy));
+                }
+                continue;
+            }
+
+            // 2) 문(열려 있을 때만 walkable로 포함)
+            if (Boolean.TRUE.equals(fv.getTag(TAG_IS_DOOR))) {
+                Integer frame = (Integer) fv.getTag(TAG_DOOR_FRAME);
+                Integer gx = fv.getFenceGridXTag();
+                Integer gy = fv.getFenceGridYTag();
+                if (frame != null && frame <= 2 && gx != null && gy != null) {
+                    // door는 3조각 각각이 grid 1칸이므로 각 조각을 그대로 포함
+                    ranchFloorCells.add(new android.graphics.Point(gx, gy));
+                }
+            }
+        }
+
+        pushWalkableToSprite();
+    }
+
     // ===== Fence 설치 모드 =====
     private void enterFenceMode(int atlasResId) {
         exitFenceMode();
@@ -867,7 +1129,8 @@ public class MainActivity extends AppCompatActivity {
 
         fenceOverlay = new FencePlacerOverlay(this, GRID_PX, masks -> commitFences(masks, atlasResId));
         fenceOverlay.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
         fenceOverlay.setCamera(cameraLeft, cameraTop);
 
         View editBtn = findViewById(R.id.editModeButton);
@@ -892,7 +1155,6 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-        // 버튼은 panel 에만 추가합니다 (bar 에 다시 addView 금지)
         LinearLayout panel = (LinearLayout) fenceModeBar.getTag(ID_TOOLBAR_PANEL);
 
         Button btnGate = new Button(this);
@@ -924,18 +1186,19 @@ public class MainActivity extends AppCompatActivity {
         btnDel.setOnClickListener(v -> toggleFenceSelectDelete(atlasResId));
         shrinkButton(btnDel);
 
-        // panel 에만 추가
         panel.addView(btnGate, 0);
         panel.addView(btnUndo, 1);
         panel.addView(btnDel, 2);
 
-        // overlay / bar 는 한 번만 추가
         farmArea.addView(fenceOverlay);
         farmArea.addView(fenceModeBar);
 
         Toast.makeText(this, "설치할 위치를 드래그하여 배치하세요.", Toast.LENGTH_SHORT).show();
-    }
 
+        updateCharacterLock();
+
+        bringHeroOverlayToFront();
+    }
 
     private void exitFenceMode() {
         if (fenceModeBar != null) {
@@ -950,13 +1213,12 @@ public class MainActivity extends AppCompatActivity {
             fenceOverlay = null;
         }
         ranchDoorPlacementOn = false;
-        if (fenceAtlas != null) {
-            fenceAtlas.dispose();
-            fenceAtlas = null;
-        }
-        detachDeleteListenersForAtlas(-1 /*모두 무시하고 전부 해제하기 위해*/); // atlas 체크는 내부서 함
+        if (fenceAtlas != null) { fenceAtlas.dispose(); fenceAtlas = null; }
+        detachDeleteListenersForAtlas(-1);
         fenceDeleteSelectOn = false;
         fenceUndoStack.clear();
+        updateCharacterLock();
+        bringHeroOverlayToFront();
     }
 
     private void commitRanchDoorCellsIfAny(int atlasResId) {
@@ -976,7 +1238,6 @@ public class MainActivity extends AppCompatActivity {
         if (fenceAtlas == null) return;
 
         HashMap<String, SelectableFenceView> current = collectFenceMapByAtlas(atlasResId);
-
         ArrayList<View> createdThisCommit = new ArrayList<>();
 
         for (Map.Entry<Point, Integer> e : cells.entrySet()) {
@@ -988,7 +1249,6 @@ public class MainActivity extends AppCompatActivity {
 
             if (isGateCell) {
                 boolean vertical = isGateVerticalSpot(current, gx, gy);
-                // ▼ 교체: 생성된 뷰들을 받아서 누적
                 ArrayList<View> g = placeGateGroup(gx, gy, atlasResId, vertical);
                 createdThisCommit.addAll(g);
                 continue;
@@ -1021,6 +1281,8 @@ public class MainActivity extends AppCompatActivity {
 
         recalcAllGridMasks();
         pushFenceUndo(createdThisCommit);
+        bringHeroOverlayToFront();
+        saveAppliedItems();
     }
 
     private void onFenceDragEnd(SelectableFenceView v) {
@@ -1034,24 +1296,16 @@ public class MainActivity extends AppCompatActivity {
         saveAppliedItems();
     }
 
-    // ===== House/Ranch-Structure 설치 모드 =====
+    // ===== 구조물(벽/바닥) 설치 모드 =====
     private void enterHouseMode(int atlasResId, String okTextFromCaller) {
         exitHouseMode();
         if (houseOverlay != null) exitHouseMode();
         houseAtlas = new HouseAtlas(this, atlasResId, 16);
 
-        isRanchBuild = false;
-        if (okTextFromCaller != null) {
-            String t = okTextFromCaller.toLowerCase();
-            if (t.contains("목장") || t.contains("축사") || t.contains("외양간")
-                    || t.contains("ranch") || t.contains("barn") || t.contains("stable")) {
-                isRanchBuild = true;
-            }
-        }
-
         houseOverlay = new FencePlacerOverlay(this, GRID_PX, masks -> commitHouseWalls(masks, atlasResId));
         houseOverlay.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
         houseOverlay.setCamera(cameraLeft, cameraTop);
 
         View editBtn = findViewById(R.id.editModeButton);
@@ -1066,9 +1320,7 @@ public class MainActivity extends AppCompatActivity {
                     commitHouseDoorCellsIfAny(atlasResId);
                     saveAppliedItems();
                     exitHouseMode();
-                    Toast.makeText(this,
-                            (isRanchBuild ? "목장 설치를 완료했습니다." : "집 설치를 완료했습니다."),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "구조물 설치를 완료했습니다.", Toast.LENGTH_SHORT).show();
                 },
                 "설치 모드 취소",
                 v -> {
@@ -1079,7 +1331,6 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-        // 버튼은 panel 에만 추가
         LinearLayout panel = (LinearLayout) houseModeBar.getTag(ID_TOOLBAR_PANEL);
 
         Button btnDoor = new Button(this);
@@ -1110,18 +1361,17 @@ public class MainActivity extends AppCompatActivity {
         btnDelH.setOnClickListener(v -> toggleHouseSelectDelete(atlasResId));
         shrinkButton(btnDelH);
 
-        // panel 에만 추가
         panel.addView(btnDoor, 0);
         panel.addView(btnUndoH, 1);
         panel.addView(btnDelH, 2);
 
-        // overlay / bar 는 한 번만 추가
         farmArea.addView(houseOverlay);
         farmArea.addView(houseModeBar);
 
         Toast.makeText(this, "설치할 위치를 드래그하여 배치하세요.", Toast.LENGTH_SHORT).show();
+        updateCharacterLock();
+        bringHeroOverlayToFront();
     }
-
 
     private void exitHouseMode() {
         if (houseModeBar != null) {
@@ -1136,13 +1386,12 @@ public class MainActivity extends AppCompatActivity {
             houseOverlay = null;
         }
         houseDoorPlacementOn = false;
-        if (houseAtlas != null) {
-            houseAtlas.dispose();
-            houseAtlas = null;
-        }
+        if (houseAtlas != null) { houseAtlas.dispose(); houseAtlas = null; }
         detachDeleteListenersForAtlas(-1);
         houseDeleteSelectOn = false;
         houseUndoStack.clear();
+        updateCharacterLock();
+        bringHeroOverlayToFront();
     }
 
     private void commitHouseDoorCellsIfAny(int atlasResId) {
@@ -1150,11 +1399,8 @@ public class MainActivity extends AppCompatActivity {
         if (houseOverlay != null) left.addAll(houseOverlay.getGateCells());
         if (left.isEmpty()) return;
 
-        // ▼ 추가: 이번 배치에서 만들어진 뷰들을 모을 리스트
         ArrayList<View> createdBatch = new ArrayList<>();
-
         for (Point p : left) {
-            // ▼ 문 1개 배치가 만든 모든 파트를 반환받아서 누적
             createdBatch.addAll(placeHouseDoor(p.x, p.y, atlasResId));
         }
 
@@ -1162,15 +1408,13 @@ public class MainActivity extends AppCompatActivity {
         if (houseOverlay != null) houseOverlay.clearGateCells();
 
         recalcAllGridMasks();
-
-        // ▼ 추가: 문 배치 묶음을 UNDO 스택에 올림
         pushHouseUndo(createdBatch);
+        saveAppliedItems();
     }
 
-    private void commitHouseWalls(Map<Point, Integer> cells, int atlasResId) {
+    private void commitHouseWalls(Map<Point,Integer> cells, int atlasResId) {
         if (houseAtlas == null) return;
 
-        // ▼ 추가: 이번 커밋에서 생성된 벽(또는 문을 여기서 배치한다면 그 파트들) 모으기
         ArrayList<View> createdThisCommit = new ArrayList<>();
 
         for (Map.Entry<Point,Integer> e : cells.entrySet()) {
@@ -1180,7 +1424,6 @@ public class MainActivity extends AppCompatActivity {
             boolean isDoorCell = (houseOverlay != null && houseOverlay.getGateCells().contains(cell))
                     || houseDoorCellsBuffer.contains(cell);
             if (isDoorCell) {
-                // 문은 placeHouseDoor에서 생성된 파트들을 되돌리기 묶음으로 수집하려면 이렇게:
                 createdThisCommit.addAll(placeHouseDoor(gx, gy, atlasResId));
                 continue;
             }
@@ -1204,38 +1447,33 @@ public class MainActivity extends AppCompatActivity {
             farmArea.addView(wall);
             wall.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(160).start();
 
-            // ▼ 추가: 방금 만든 벽을 되돌리기 묶음에 포함
             createdThisCommit.add(wall);
         }
 
         recalcAllGridMasks();
-
-        // ▼ 추가: 이번 벽/문 배치 묶음을 UNDO 스택에 올림
         pushHouseUndo(createdThisCommit);
+        bringHeroOverlayToFront();
+        saveAppliedItems();
     }
 
-    // 기존 buildTopBar(...) 를 이 코드로 교체
     private LinearLayout buildTopBar(String okText, View.OnClickListener ok,
                                      String cancelText, View.OnClickListener cancel) {
 
-        // 컨테이너(툴바)
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.VERTICAL);
         bar.setPadding(dp(6), dp(6), dp(6), dp(6));
         bar.setBackgroundColor(0xAAFFFFFF);
         bar.setElevation(dp(2));
 
-        // ★ 왼쪽 위에 붙이기
         FrameLayout.LayoutParams barLp = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
         );
-        barLp.gravity = Gravity.TOP | Gravity.START; // ← START 로 변경
+        barLp.gravity = Gravity.TOP | Gravity.START;
         barLp.topMargin = dp(16);
-        barLp.leftMargin = dp(16);                   // ← leftMargin 사용
+        barLp.leftMargin = dp(16);
         bar.setLayoutParams(barLp);
 
-        // (옵션) 드래그로 살짝 옮길 수 있게
         final float[] down = new float[2];
         final int[] start = new int[2];
         bar.setOnTouchListener((v, e) -> {
@@ -1246,7 +1484,7 @@ public class MainActivity extends AppCompatActivity {
                     down[1] = e.getRawY();
                     start[0] = lp.leftMargin;
                     start[1] = lp.topMargin;
-                    return false; // 클릭도 동작하게 false
+                    return false;
                 case MotionEvent.ACTION_MOVE:
                     float dx = e.getRawX() - down[0];
                     float dy = e.getRawY() - down[1];
@@ -1258,24 +1496,20 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // ── 토글 헤더(작게) ──
         Button header = new Button(this);
         header.setText("도구 ▾");
         header.setAllCaps(false);
         shrinkButton(header);
 
-        // ── 내부 패널 ──
         LinearLayout panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
 
-        // 설치 완료
         Button btnOk = new Button(this);
         btnOk.setText(okText);
         btnOk.setAllCaps(false);
         btnOk.setOnClickListener(ok);
         shrinkButton(btnOk);
 
-        // 설치 모드 취소
         Button btnCancel = new Button(this);
         btnCancel.setText(cancelText);
         btnCancel.setAllCaps(false);
@@ -1285,7 +1519,6 @@ public class MainActivity extends AppCompatActivity {
         panel.addView(btnOk);
         panel.addView(btnCancel);
 
-        // 접기/펼치기
         header.setOnClickListener(v -> {
             if (panel.getVisibility() == View.VISIBLE) {
                 panel.setVisibility(View.GONE);
@@ -1299,19 +1532,17 @@ public class MainActivity extends AppCompatActivity {
         bar.addView(header);
         bar.addView(panel);
 
-        // 외부에서 panel에 버튼 추가할 수 있도록 태그 저장
         bar.setTag(ID_TOOLBAR_PANEL, panel);
 
         return bar;
     }
 
     /**
-     * 울타리/집벽 공통: atlas 그룹별로 이웃 연결 재계산 + 문/게이트 프레임 적용
+     * 울타리/구조물 공통: atlas 그룹별로 이웃 연결 재계산 + 문/게이트 프레임 적용
      */
     private void recalcAllGridMasks() {
         HashMap<Integer, HashMap<String, SelectableFenceView>> byAtlas = new HashMap<>();
 
-        // floor(mask>15)는 이웃 계산에서 제외
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (child instanceof SelectableFenceView) {
@@ -1346,25 +1577,21 @@ public class MainActivity extends AppCompatActivity {
 
             FenceAtlas tmpFence = null;
             HouseAtlas tmpHouse = null;
-            if (isHouse)
-                tmpHouse = (houseAtlas != null ? houseAtlas : new HouseAtlas(this, atlasResId, 16));
+            if (isHouse) tmpHouse = (houseAtlas != null ? houseAtlas : new HouseAtlas(this, atlasResId, 16));
             else tmpFence = (fenceAtlas != null ? fenceAtlas : new FenceAtlas(this, atlasResId));
 
             for (SelectableFenceView fv : map.values()) {
                 int gx = fv.getFenceGridXTag(), gy = fv.getFenceGridYTag();
                 int m = computeMaskAt(map, gx, gy);
 
-                // === 집/구조물 문 처리 ===
+                // === 문(목장 전용) 처리 ===
                 if (Boolean.TRUE.equals(fv.getTag(TAG_IS_DOOR))) {
                     ensureDoorSpritesLoaded();
-                    if (doorSheet != null) {
+                    if (ranchDoorFrameSlices != null) {
                         int frameIdx = getDoorFrameIndex(fv);
                         Integer sliceIdx = (Integer) fv.getTag(TAG_DOOR_SLICE);
                         if (sliceIdx == null) sliceIdx = 0;
-                        String tp = String.valueOf(fv.getTag(TAG_DOOR_TYPE));
-                        Bitmap bmp = "RANCH".equals(tp)
-                                ? safeRanchSlice(frameIdx, sliceIdx)
-                                : safeHouseFrame(frameIdx);
+                        Bitmap bmp = safeRanchSlice(frameIdx, sliceIdx);
                         fv.setFenceMaskAndBitmap(m, bmp);
 
                         if (!isDoorListenerAttached(fv)) {
@@ -1379,7 +1606,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                // === 울타리 게이트 처리(기존 유지) ===
+                // === 울타리 게이트 처리 ===
                 if (Boolean.TRUE.equals(fv.getTag(TAG_KEY_GATE))) {
                     ensureGateSlicesLoaded();
                     if (gateHFrameSlices != null && gateVFrameSlices != null) {
@@ -1407,7 +1634,7 @@ public class MainActivity extends AppCompatActivity {
                     continue;
                 }
 
-                // === 일반 울타리/집벽 ===
+                // === 일반 울타리/구조물 벽 ===
                 if (isHouse && m == 0) { // 고립 제거
                     toRemove.add(fv);
                     continue;
@@ -1435,8 +1662,8 @@ public class MainActivity extends AppCompatActivity {
             if (isHouse) fillHouseFloor(atlasResId, map, tmpHouse);
         }
 
-        // ★ 문 그룹 갱신
         rebuildDoorGroups();
+        rebuildWalkableFromViews();
     }
 
     private HashMap<String, SelectableFenceView> collectFenceMapByAtlas(int atlasResId) {
@@ -1519,7 +1746,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (wallMap.isEmpty()) return;
 
-        // 2) 경계 박스 계산
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
         for (String k : wallMap.keySet()) {
@@ -1531,15 +1757,11 @@ public class MainActivity extends AppCompatActivity {
             if (y < minY) minY = y;
             if (y > maxY) maxY = y;
         }
-        minX -= 1;
-        minY -= 1;
-        maxX += 1;
-        maxY += 1;
+        minX -= 1; minY -= 1; maxX += 1; maxY += 1;
 
         int W = maxX - minX + 1;
         int H = maxY - minY + 1;
 
-        // 3) 점유 맵(벽)
         boolean[][] occ = new boolean[H][W];
         for (String k : wallMap.keySet()) {
             String[] s = k.split(",");
@@ -1548,7 +1770,7 @@ public class MainActivity extends AppCompatActivity {
             if (gy >= 0 && gy < H && gx >= 0 && gx < W) occ[gy][gx] = true;
         }
 
-        // 4) 문/게이트도 막힌 셀로 간주 (바닥 새어보임 방지)
+        // 문/게이트도 막힌 셀로 간주 (바닥 새어보임 방지)
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (!(child instanceof SelectableFenceView)) continue;
@@ -1561,11 +1783,8 @@ public class MainActivity extends AppCompatActivity {
             if (gxTag == null || gyTag == null) continue;
 
             boolean blocks = false;
-            // 같은 atlas의 벽/타일
             if (f.getAtlasResId() == atlasResId) blocks = true;
-            // 집/구조물 문
             if (Boolean.TRUE.equals(f.getTag(TAG_IS_DOOR))) blocks = true;
-            // (선택) 울타리 게이트가 내부 사각에 들어온 경우도 차단
             if (Boolean.TRUE.equals(f.getTag(TAG_KEY_GATE))) blocks = true;
 
             if (blocks
@@ -1575,7 +1794,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // 5) 바깥 flood-fill
+        // 바깥 flood-fill
         boolean[][] outside = new boolean[H][W];
         ArrayDeque<int[]> dq = new ArrayDeque<>();
         for (int x = 0; x < W; x++) {
@@ -1596,7 +1815,7 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < 4; i++) dq.add(new int[]{x + dx[i], y + dy[i]});
         }
 
-        // 6) 내부에 바닥 채우기
+        // 내부에 바닥 채우기
         for (int gy = minY + 1; gy <= maxY - 1; gy++) {
             for (int gx = minX + 1; gx <= maxX - 1; gx++) {
                 int ix = gx - minX, iy = gy - minY;
@@ -1621,6 +1840,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        bringHeroOverlayToFront();
+        rebuildWalkableFromViews();
     }
 
     private boolean isHouseAtlas(int atlasResId) {
@@ -1633,17 +1854,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isRanchStructureAtlas(int atlasResId) {
-        try {
-            String name = getResources().getResourceEntryName(atlasResId).toLowerCase();
-            return name.contains("ranch") || name.contains("barn") || name.contains("stable") || name.contains("structure");
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     // =========================
-    // [A] 울타리 게이트(기존) 스프라이트/유틸/배치/애니메이션
+    // [A] 울타리 게이트 스프라이트/유틸/배치/애니메이션
     // =========================
     private void ensureGateSlicesLoaded() {
         if (gateHFrameSlices != null && gateVFrameSlices != null) return;
@@ -1657,7 +1869,6 @@ public class MainActivity extends AppCompatActivity {
 
         final int cell = 16;
 
-        // 가로: row 0, 한 프레임은 4칸 → colStart=f*4, slice=0..3
         gateHFrameSlices = new Bitmap[5][4];
         for (int f = 0; f < 5; f++) {
             int colStart = f * 4;
@@ -1666,12 +1877,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // 세로: row 1~3, frame은 col={0,2,4,6,8}
         gateVFrameSlices = new Bitmap[5][3];
         int[] vCols = {0, 2, 4, 6, 8};
         for (int f = 0; f < 5; f++) {
             int col = vCols[f];
-            for (int s = 0; s < 3; s++) { // 0..2 (row1, row2, row3)
+            for (int s = 0; s < 3; s++) {
                 int row = 1 + s;
                 gateVFrameSlices[f][s] = Bitmap.createBitmap(gateSheet, col * cell, row * cell, cell, cell);
             }
@@ -1679,14 +1889,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Bitmap safeHSlice(int frame, int slice) {
-        frame = Math.max(0, Math.min(4, frame));
-        slice = Math.max(0, Math.min(3, slice));
+        frame = clamp(frame, 0, 4);
+        slice = clamp(slice, 0, 3);
         return gateHFrameSlices[frame][slice];
     }
 
     private Bitmap safeVSlice(int frame, int slice) {
-        frame = Math.max(0, Math.min(4, frame));
-        slice = Math.max(0, Math.min(2, slice));
+        frame = clamp(frame, 0, 4);
+        slice = clamp(slice, 0, 2);
         return gateVFrameSlices[frame][slice];
     }
 
@@ -1699,20 +1909,13 @@ public class MainActivity extends AppCompatActivity {
         Object tag = v.getTag(TAG_KEY_GATE_FRAME);
         int t = 0;
         if (tag instanceof Integer) t = (Integer) tag;
-        if (t < 0) t = 0;
-        if (t > 4) t = 4;
-        return t;
+        return clamp(t, 0, 4);
     }
 
     private void setGateFrameIndex(SelectableFenceView v, int idx) {
-        if (idx < 0) idx = 0;
-        if (idx > 4) idx = 4;
-        v.setTag(TAG_KEY_GATE_FRAME, idx);
+        v.setTag(TAG_KEY_GATE_FRAME, clamp(idx, 0, 4));
     }
 
-    /**
-     * 게이트 묶음 설치: 가로(4칸) 또는 세로(5칸)
-     */
     private ArrayList<View> placeGateGroup(int gx, int gy, int atlasResId, boolean vertical) {
         ensureGateSlicesLoaded();
         ArrayList<View> created = new ArrayList<>();
@@ -1792,9 +1995,6 @@ public class MainActivity extends AppCompatActivity {
         return created;
     }
 
-    /**
-     * 그룹 ID 기준으로 게이트 열림/닫힘 애니메이션
-     */
     private void animateGateToggleByGroup(String groupId) {
         ensureGateSlicesLoaded();
         if (gateHFrameSlices == null || gateVFrameSlices == null) return;
@@ -1849,10 +2049,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // =========================
-    // [B] 집/목장 구조물 '문' 스프라이트 로더/유틸/배치/애니메이션
+    // [B] 구조물 '문'(목장) 스프라이트 로더/유틸/배치/애니메이션
     // =========================
     private void ensureDoorSpritesLoaded() {
-        if (houseDoorFrames != null && ranchDoorFrameSlices != null) return;
+        if (ranchDoorFrameSlices != null) return;
         if (doorSheet == null) {
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inScaled = false;
@@ -1863,13 +2063,7 @@ public class MainActivity extends AppCompatActivity {
 
         final int cell = 16;
 
-        // 1행: 집 문(1칸) 6프레임
-        houseDoorFrames = new Bitmap[DOOR_FRAMES];
-        for (int f = 0; f < DOOR_FRAMES; f++) {
-            houseDoorFrames[f] = Bitmap.createBitmap(doorSheet, f * cell, 0, cell, cell);
-        }
-
-        // 2행: 목장 구조물 문(가로 3칸=48×16) 6프레임 → 각 프레임의 3조각
+        // 2행: 목장 구조물 문(가로 3칸) 6프레임 → 각 프레임의 3조각
         ranchDoorFrameSlices = new Bitmap[DOOR_FRAMES][3];
         for (int f = 0; f < DOOR_FRAMES; f++) {
             int colStart = f * 3;
@@ -1879,16 +2073,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Bitmap safeHouseFrame(int frame) {
-        if (houseDoorFrames == null) return null;
-        frame = Math.max(0, Math.min(DOOR_FRAMES - 1, frame));
-        return houseDoorFrames[frame];
-    }
-
     private Bitmap safeRanchSlice(int frame, int slice) {
         if (ranchDoorFrameSlices == null) return null;
-        frame = Math.max(0, Math.min(DOOR_FRAMES - 1, frame));
-        slice = Math.max(0, Math.min(2, slice));
+        frame = clamp(frame, 0, DOOR_FRAMES - 1);
+        slice = clamp(slice, 0, 2);
         return ranchDoorFrameSlices[frame][slice];
     }
 
@@ -1900,89 +2088,50 @@ public class MainActivity extends AppCompatActivity {
         Object tag = v.getTag(TAG_DOOR_FRAME);
         int t = 5; // 기본 닫힘
         if (tag instanceof Integer) t = (Integer) tag;
-        if (t < 0) t = 0;
-        if (t > DOOR_FRAMES - 1) t = DOOR_FRAMES - 1;
-        return t;
+        return clamp(t, 0, DOOR_FRAMES - 1);
     }
 
     private ArrayList<View> placeHouseDoor(int gx, int gy, int atlasResId) {
         ensureDoorSpritesLoaded();
         ArrayList<View> created = new ArrayList<>();
+        String groupId = "R:" + gx + "," + gy;
+        int startFrame = DOOR_FRAMES - 1;
 
-        boolean useRanchDoor = isRanchBuild || isRanchStructureAtlas(atlasResId);
+        for (int s = 0; s < 3; s++) {
+            int cx = gx + s, cy = gy;
+            float wx = cx * GRID_PX + cameraLeft;
+            float wy = cy * GRID_PX + cameraTop;
 
-        if (useRanchDoor) {
-            String groupId = "R:" + gx + "," + gy;
-            int startFrame = DOOR_FRAMES - 1;
-            for (int s = 0; s < 3; s++) {
-                int cx = gx + s, cy = gy;
-                float wx = cx * GRID_PX + cameraLeft;
-                float wy = cy * GRID_PX + cameraTop;
-
-                SelectableFenceView part = new SelectableFenceView(
-                        this, safeRanchSlice(startFrame, s), fenceDisplaySizePx, 0, atlasResId
-                );
-                part.setFenceGridCell(cx, cy);
-                part.setFenceMode(true);
-                part.setLayoutParams(new FrameLayout.LayoutParams(GRID_PX, GRID_PX));
-                part.setCameraOffset(cameraLeft, cameraTop);
-                part.setWorldPosition(wx, wy);
-
-                part.setTag(TAG_IS_DOOR, Boolean.TRUE);
-                part.setTag(TAG_DOOR_TYPE, "RANCH");
-                part.setTag(TAG_DOOR_GROUP, groupId);
-                part.setTag(TAG_DOOR_SLICE, s);
-                part.setTag(TAG_DOOR_FRAME, startFrame);
-
-                if (s == 0 && !isDoorListenerAttached(part)) {
-                    part.setOnClickListener(v -> animateDoorToggleByGroup(groupId));
-                    part.setTag(TAG_DOOR_LISTENER, Boolean.TRUE);
-                }
-
-                part.setEditEnabled(isEditMode);
-                if (isEditMode) part.showBorderAndButtons(); else part.hideBorderAndButtons();
-                part.setOnDragEndListener(v -> onFenceDragEnd((SelectableFenceView) v));
-                farmArea.addView(part);
-                created.add(part);
-            }
-        } else {
-            String groupId = "H:" + gx + "," + gy;
-            int startFrame = DOOR_FRAMES - 1;
-            SelectableFenceView door = new SelectableFenceView(
-                    this, safeHouseFrame(startFrame), fenceDisplaySizePx, 0, atlasResId
+            SelectableFenceView part = new SelectableFenceView(
+                    this, safeRanchSlice(startFrame, s), fenceDisplaySizePx, 0, atlasResId
             );
-            door.setFenceGridCell(gx, gy);
-            door.setFenceMode(true);
-            door.setLayoutParams(new FrameLayout.LayoutParams(GRID_PX, GRID_PX));
-            door.setCameraOffset(cameraLeft, cameraTop);
-            door.setWorldPosition(gx * GRID_PX + cameraLeft, gy * GRID_PX + cameraTop);
+            part.setFenceGridCell(cx, cy);
+            part.setFenceMode(true);
+            part.setLayoutParams(new FrameLayout.LayoutParams(GRID_PX, GRID_PX));
+            part.setCameraOffset(cameraLeft, cameraTop);
+            part.setWorldPosition(wx, wy);
 
-            door.setTag(TAG_IS_DOOR, Boolean.TRUE);
-            door.setTag(TAG_DOOR_TYPE, "HOUSE");
-            door.setTag(TAG_DOOR_GROUP, groupId);
-            door.setTag(TAG_DOOR_SLICE, 0);
-            door.setTag(TAG_DOOR_FRAME, startFrame);
+            part.setTag(TAG_IS_DOOR, Boolean.TRUE);
+            part.setTag(TAG_DOOR_GROUP, groupId);
+            part.setTag(TAG_DOOR_SLICE, s);
+            part.setTag(TAG_DOOR_FRAME, startFrame);
 
-            if (!isDoorListenerAttached(door)) {
-                door.setOnClickListener(v -> animateDoorToggleByGroup(groupId));
-                door.setTag(TAG_DOOR_LISTENER, Boolean.TRUE);
+            if (s == 0 && !isDoorListenerAttached(part)) {
+                part.setOnClickListener(v -> animateDoorToggleByGroup(groupId));
+                part.setTag(TAG_DOOR_LISTENER, Boolean.TRUE);
             }
 
-            door.setEditEnabled(isEditMode);
-            if (isEditMode) door.showBorderAndButtons(); else door.hideBorderAndButtons();
-            door.setOnDragEndListener(v -> onFenceDragEnd((SelectableFenceView) v));
-            farmArea.addView(door);
-            created.add(door);
+            part.setEditEnabled(isEditMode);
+            if (isEditMode) part.showBorderAndButtons(); else part.hideBorderAndButtons();
+            part.setOnDragEndListener(v -> onFenceDragEnd((SelectableFenceView) v));
+            farmArea.addView(part);
+            created.add(part);
         }
 
         rebuildDoorGroups();
         return created;
     }
 
-
-    /**
-     * 그룹 ID 단위로 집/구조물 문 수동 토글 애니메이션
-     */
     private void animateDoorToggleByGroup(String groupId) {
         ensureDoorSpritesLoaded();
         if (doorSheet == null) return;
@@ -2018,8 +2167,7 @@ public class MainActivity extends AppCompatActivity {
                     int slice = 0;
                     Object sl = p.getTag(TAG_DOOR_SLICE);
                     if (sl instanceof Integer) slice = (Integer) sl;
-                    String tp = String.valueOf(p.getTag(TAG_DOOR_TYPE));
-                    Bitmap bmp = "RANCH".equals(tp) ? safeRanchSlice(idx, slice) : safeHouseFrame(idx);
+                    Bitmap bmp = safeRanchSlice(idx, slice);
                     int m = 0;
                     Integer mt = p.getFenceMaskTag();
                     if (mt != null) m = mt;
@@ -2031,25 +2179,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // ★★★ 추가: 캐릭터 근접 시 울타리 게이트 자동 개폐 업데이트 ★★★
+    // ★ 캐릭터 근접 시 울타리 게이트 자동 개폐
     // ─────────────────────────────────────────────────────────────────────
-
-    /**
-     * 캐릭터와 각 게이트 그룹의 중심 거리로 목표 프레임을 정하고 한 틱씩 근접
-     */
     private void updateGateAutoOpenClose() {
-        // 캐릭터 월드 좌표(캐릭터는 화면 중앙에 그려지므로 카메라 + 화면중앙이 곧 캐릭터 좌표)
         float charX = cameraLeft + (spriteView != null ? spriteView.getWidth() / 2f : 0f);
         float charY = cameraTop + (spriteView != null ? spriteView.getHeight() / 2f : 0f);
 
-        // 그룹별 헤드(slice==0)만 스캔
         for (int i = 0; i < farmArea.getChildCount(); i++) {
             View child = farmArea.getChildAt(i);
             if (!(child instanceof SelectableFenceView)) continue;
             SelectableFenceView head = (SelectableFenceView) child;
             if (!Boolean.TRUE.equals(head.getTag(TAG_KEY_GATE))) continue;
 
-            // 헤드만(슬라이스 0) 처리
             Object sl = head.getTag(TAG_KEY_GATE_SLICE);
             if (!(sl instanceof Integer) || ((Integer) sl) != 0) continue;
 
@@ -2059,16 +2200,13 @@ public class MainActivity extends AppCompatActivity {
 
             boolean vertical = Boolean.TRUE.equals(head.getTag(TAG_KEY_GATE_VERTICAL));
 
-            // 게이트 그룹의 중심 좌표 계산
             float gx = head.getWorldX();
             float gy = head.getWorldY();
             float centerX, centerY;
             if (!vertical) {
-                // 가로 4칸: head(왼쪽) 기준 + 1.5칸
                 centerX = gx + GRID_PX * 1.5f;
                 centerY = gy + GRID_PX * 0.5f;
             } else {
-                // 세로 5칸: head(위쪽) 기준 + 2칸
                 centerX = gx + GRID_PX * 0.5f;
                 centerY = gy + GRID_PX * 2.0f;
             }
@@ -2076,13 +2214,11 @@ public class MainActivity extends AppCompatActivity {
             float dx = charX - centerX, dy = charY - centerY;
             float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
-            // 목표 프레임: 4=완전 열림, 0=완전 닫힘  (animateGateToggleByGroup의 증가 방향과 일치)
             int targetFrame;
             if (dist <= GATE_OPEN_RADIUS_PX) targetFrame = 4;
             else if (dist >= GATE_CLOSE_RADIUS_PX) targetFrame = 0;
-            else continue; // 히스테리시스 내부: 유지
+            else continue;
 
-            // 그룹의 모든 파트 수집
             ArrayList<SelectableFenceView> parts = new ArrayList<>();
             for (int j = 0; j < farmArea.getChildCount(); j++) {
                 View v = farmArea.getChildAt(j);
@@ -2097,7 +2233,6 @@ public class MainActivity extends AppCompatActivity {
             if (cur == targetFrame) continue;
 
             int next = cur + (targetFrame > cur ? +1 : -1);
-            // 프레임 한 틱 적용
             for (SelectableFenceView p : parts) {
                 Integer slice = (Integer) p.getTag(TAG_KEY_GATE_SLICE);
                 if (slice == null) slice = 0;
@@ -2112,12 +2247,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // ★★★ 추가: 캐릭터 근접 시 집/목장 문 자동 개폐 업데이트 ★★★
+    // ★ 캐릭터 근접 시 구조물 문 자동 개폐(목장 전용)
     // ─────────────────────────────────────────────────────────────────────
-
-    /**
-     * 현재 배치된 문 그룹 스캔(중심 좌표/타입/상태)
-     */
     private void rebuildDoorGroups() {
         doorGroups.clear();
         HashMap<String, ArrayList<SelectableFenceView>> tmp = new HashMap<>();
@@ -2138,30 +2269,20 @@ public class MainActivity extends AppCompatActivity {
             if (parts.isEmpty()) continue;
             float sx = 0, sy = 0;
             int n = 0;
-            String type = "HOUSE";
             for (SelectableFenceView p : parts) {
                 float cx = p.getWorldX() + GRID_PX / 2f;
                 float cy = p.getWorldY() + GRID_PX / 2f;
-                sx += cx;
-                sy += cy;
-                n++;
-                Object tp = p.getTag(TAG_DOOR_TYPE);
-                if (tp != null) type = tp.toString();
+                sx += cx; sy += cy; n++;
             }
             DoorGroupState st = new DoorGroupState();
             st.cx = sx / n;
             st.cy = sy / n;
-            st.type = type;
             int cur = getDoorFrameIndex(parts.get(0));
-            // 프레임 0~2(열림 방향)면 "열림으로 향함"이므로 isOpen=true로 취급
             st.isOpen = (cur <= 2);
             doorGroups.put(gid, st);
         }
     }
 
-    /**
-     * 거리 체크 후 자동 열림/닫힘(히스테리시스)
-     */
     private void autoCheckDoors() {
         if (spriteView == null || doorGroups.isEmpty()) return;
         float heroX = cameraLeft + spriteView.getWidth() / 2f;
@@ -2173,10 +2294,8 @@ public class MainActivity extends AppCompatActivity {
             float dx = heroX - st.cx, dy = heroY - st.cy;
             float d2 = dx * dx + dy * dy;
 
-            boolean isRanch = "RANCH".equals(st.type);
-            float openR = isRanch ? RANCH_DOOR_OPEN_RADIUS : HOUSE_DOOR_OPEN_RADIUS;
-            float closeR = isRanch ? RANCH_DOOR_CLOSE_RADIUS : HOUSE_DOOR_CLOSE_RADIUS;
-            float openR2 = openR * openR, closeR2 = closeR * closeR;
+            float openR2 = RANCH_DOOR_OPEN_RADIUS * RANCH_DOOR_OPEN_RADIUS;
+            float closeR2 = RANCH_DOOR_CLOSE_RADIUS * RANCH_DOOR_CLOSE_RADIUS;
 
             if (!st.isOpen && d2 <= openR2) {
                 animateDoorOpenByGroup(gid);
@@ -2188,13 +2307,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void animateDoorOpenByGroup(String gid) {
-        animateDoorTowards(gid, 0);
-    }               // 0 = 활짝 열림
-
-    private void animateDoorCloseByGroup(String gid) {
-        animateDoorTowards(gid, DOOR_FRAMES - 1);
-    } // 5 = 완전 닫힘
+    private void animateDoorOpenByGroup(String gid) { animateDoorTowards(gid, 0); }
+    private void animateDoorCloseByGroup(String gid) { animateDoorTowards(gid, DOOR_FRAMES - 1); }
 
     private void animateDoorTowards(String gid, int target) {
         ensureDoorSpritesLoaded();
@@ -2215,7 +2329,6 @@ public class MainActivity extends AppCompatActivity {
 
         ui.post(new Runnable() {
             int idx = start;
-
             @Override
             public void run() {
                 if (idx == target) return;
@@ -2226,14 +2339,14 @@ public class MainActivity extends AppCompatActivity {
                     int slice = 0;
                     Object sl = p.getTag(TAG_DOOR_SLICE);
                     if (sl instanceof Integer) slice = (Integer) sl;
-                    String tp = String.valueOf(p.getTag(TAG_DOOR_TYPE));
-                    Bitmap bmp = "RANCH".equals(tp) ? safeRanchSlice(idx, slice) : safeHouseFrame(idx);
+                    Bitmap bmp = safeRanchSlice(idx, slice);
                     int m = 0;
                     Integer mt = p.getFenceMaskTag();
                     if (mt != null) m = mt;
                     p.setFenceMaskAndBitmap(m, bmp);
                 }
                 ui.postDelayed(this, 70);
+                rebuildWalkableFromViews();
             }
         });
     }
@@ -2260,7 +2373,7 @@ public class MainActivity extends AppCompatActivity {
             for (View v : houseUndoStack.pop()) farmArea.removeView(v);
             recalcAllGridMasks();
             saveAppliedItems();
-            Toast.makeText(this, "집/목장 최근 배치를 되돌렸습니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "구조물 최근 배치를 되돌렸습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -2337,6 +2450,7 @@ public class MainActivity extends AppCompatActivity {
             detachDeleteListenersForAtlas(atlasResId);
             recalcAllGridMasks();
             Toast.makeText(this, "삭제 모드 해제", Toast.LENGTH_SHORT).show();
+            updateCharacterLock();
         }
     }
 
@@ -2352,5 +2466,73 @@ public class MainActivity extends AppCompatActivity {
             recalcAllGridMasks();
             Toast.makeText(this, "삭제 모드 해제", Toast.LENGTH_SHORT).show();
         }
+        updateCharacterLock();
     }
+
+    // ───── 공용 유틸 ─────
+    private static int clamp(int v, int lo, int hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    // MainActivity 하단 유틸 근처에 추가
+    private android.graphics.Point getHeroGridCell() {
+        // 게이트 자동개폐에서 쓰던 기준과 동일: 카메라 기준 화면 중앙 ≈ 캐릭터
+        float heroX = cameraLeft + (spriteView != null ? spriteView.getWidth() / 2f : 0f);
+        float heroY = cameraTop  + (spriteView != null ? spriteView.getHeight() / 2f : 0f);
+        int gx = (int)Math.floor(heroX / GRID_PX);
+        int gy = (int)Math.floor(heroY / GRID_PX);
+        return new android.graphics.Point(gx, gy);
+    }
+
+    private boolean isCellWalkable(android.graphics.Point cell) {
+        if (cell == null) return false;
+        for (android.graphics.Point p : ranchFloorCells) {
+            if (p.x == cell.x && p.y == cell.y) return true;
+        }
+        return false;
+    }
+
+    /** 캐릭터가 화이트리스트 밖이면 임시로 프리무브 모드로 전환 */
+    private void applyWalkableSmart() {
+        if (spriteView == null) return;
+
+        if (ranchFloorCells.isEmpty()) {
+            // 바닥/문 정의가 없으면 자유 이동
+            spriteView.setWalkableGrid(null, GRID_PX);
+            return;
+        }
+        android.graphics.Point heroCell = getHeroGridCell();
+        if (!isCellWalkable(heroCell)) {
+            // 실내 바닥/열린문 위에 서 있지 않음 → 잠시 자유 이동
+            spriteView.setWalkableGrid(null, GRID_PX);
+        } else {
+            // 실내에 들어온 상태 → 화이트리스트 적용(문 닫히면 내부에만)
+            spriteView.setWalkableGrid(ranchFloorCells, GRID_PX);
+        }
+    }
+
+    /** 현재 level에 맞춰 10레벨 단위 해금을 진행한다.
+     * @param showToasts true면 새로 해금된 항목을 토스트로 알림
+     */
+    private void applyLevelUnlocksIfNeeded(boolean showToasts) {
+        if (prefs == null) return;
+
+        int targetSteps = Math.min(level / 10, UNLOCK_KEYS.length);
+        int prevSteps   = prefs.getInt(scopedKey(KEY_UNLOCK_COUNT), 0);
+        if (targetSteps <= prevSteps) return;
+
+        SharedPreferences.Editor ed = prefs.edit();
+        for (int i = prevSteps; i < targetSteps; i++) {
+            ed.putBoolean(scopedKey("unlock_" + UNLOCK_KEYS[i]), true);
+            if (showToasts && i >= 0 && i < UNLOCK_LABELS.length) {
+                Toast.makeText(this, "새 해금: " + UNLOCK_LABELS[i], Toast.LENGTH_SHORT).show();
+            }
+        }
+        ed.putInt(scopedKey(KEY_UNLOCK_COUNT), targetSteps);
+        ed.apply();
+    }
+
+    /** 인벤토리 등에서 조회할 때도 사용자별 키 사용 */
+    private boolean isUnlocked(String logicalKey) {
+        return prefs.getBoolean(scopedKey("unlock_" + logicalKey), false);
+    }
+
 }

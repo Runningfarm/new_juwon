@@ -163,103 +163,100 @@
         android:layout_height="70dp"
         android:orientation="horizontal"
         android:background="#FFFFFF"
-        android:padding="6dp"
-        android:gravity="center"
-        android:elevation="10dp"
+        android:elevation="8dp"
         android:layout_margin="8dp"
-        android:layout_gravity="center_horizontal"
-        android:clipToPadding="false"
-        android:layout_marginBottom="12dp"
+        android:padding="6dp"
         android:backgroundTint="#FFFFFF"
         android:backgroundTintMode="src_in"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- 탭 버튼들 (생략 없이 5개 모두 구성) -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab1Button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_home"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
-                android:contentDescription="홈" />
-
+                android:contentDescription="홈"
+                android:elevation="2dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab2Button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_running"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
-                android:contentDescription="운동" />
+                android:contentDescription="러닝"
+                android:elevation="2dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab3Button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_quest"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
-                android:contentDescription="퀘스트" />
+                android:contentDescription="퀘스트"
+                android:elevation="2dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab4Button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_inventory"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
-                android:contentDescription="인벤토리" />
+                android:contentDescription="인벤토리"
+                android:elevation="2dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab6Button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_mypage"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
-                android:contentDescription="마이페이지" />
+                android:contentDescription="마이페이지"
+                android:elevation="2dp" />
         </LinearLayout>
     </LinearLayout>
 

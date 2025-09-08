@@ -3,19 +3,17 @@ package kr.ac.hs.farm;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.http.Header;
 
 public class EditProfileActivity extends AppCompatActivity {
 
@@ -26,6 +24,24 @@ public class EditProfileActivity extends AppCompatActivity {
     private TextView tvTotalDistanceProfile;
     private TextView tvTotalCaloriesProfile;
 
+    /** 누적 러닝 통계를 저장/읽기 위한 전용 SharedPreferences */
+    private SharedPreferences statsPrefs() {
+        return getSharedPreferences("run_stats", MODE_PRIVATE);
+    }
+
+    /** 사용자별 키 스코핑 (Tab2Activity와 반드시 동일하게 유지) */
+    private String scopedKey(String base) {
+        SharedPreferences login = getSharedPreferences("login", MODE_PRIVATE);
+        String uid = login.getString("id", null);
+        return base + "_" + (uid != null && !uid.trim().isEmpty() ? uid : "guest");
+    }
+
+    private String formatSecondsToHMS(long seconds) {
+        long h = seconds / 3600;
+        long m = (seconds % 3600) / 60;
+        long s = seconds % 60;
+        return String.format("%02d:%02d:%02d", h, m, s);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,40 +59,49 @@ public class EditProfileActivity extends AppCompatActivity {
 
         // ▼ UI 연결
         editName = findViewById(R.id.editName);
-        editEmail = findViewById(R.id.editEmail);       // 이메일 (id)는 수정 불가하게 비활성화 처리 권장
+        editEmail = findViewById(R.id.editEmail);
         editWeight = findViewById(R.id.editWeight);
         editPassword = findViewById(R.id.editPassword);
         buttonUpdate = findViewById(R.id.buttonUpdate);
+
         tvTotalRunTimeProfile = findViewById(R.id.tvTotalRunTimeProfile);
         tvTotalDistanceProfile  = findViewById(R.id.tvTotalDistanceProfile);
         tvTotalCaloriesProfile  = findViewById(R.id.tvTotalCaloriesProfile);
 
-        // ▼ 저장된 로그인 정보 불러오기
-        SharedPreferences pref = getSharedPreferences("login", MODE_PRIVATE);
-        String id = pref.getString("id", "");
-        String name = pref.getString("name", "");
-        float weight = pref.getFloat("weight", 0f);
-        long totalRunSecs = pref.getLong("total_run_time_seconds", 0L);
-        float totalDistance = pref.getFloat("total_distance", 0f);
-        long totalCalories = pref.getLong("total_calories", 0L);
-        tvTotalRunTimeProfile.setText(formatSecondsToHMS(totalRunSecs));
-        tvTotalDistanceProfile.setText(totalDistance + " km");
-        tvTotalCaloriesProfile.setText(totalCalories + " kcal");
+        // ▼ 로그인 기본 정보 (프로필용)
+        SharedPreferences loginPref = getSharedPreferences("login", MODE_PRIVATE);
+        String id = loginPref.getString("id", "");
+        String name = loginPref.getString("name", "");
+        float weight = loginPref.getFloat("weight", 0f);
 
-        // ▼ 초기값 설정
+        // ▼ 누적값은 run_stats에서 사용자별 키로 읽기
+        SharedPreferences stats = statsPrefs();
+
+        long totalRunSecs = stats.getLong(scopedKey("total_run_time_seconds"), 0L);
+
+        double totalDistanceKm = Double.longBitsToDouble(
+                stats.getLong(scopedKey("total_distance_km"),
+                        Double.doubleToRawLongBits(0.0)));
+
+        int totalKcal = stats.getInt(scopedKey("total_kcal"), 0);
+
+        // ▼ 화면 표시
+        tvTotalRunTimeProfile.setText(formatSecondsToHMS(totalRunSecs));
+        tvTotalDistanceProfile.setText(String.format("%.2f km", totalDistanceKm));
+        tvTotalCaloriesProfile.setText(totalKcal + " kcal");
+
+        // ▼ 초기값 세팅
         editEmail.setText(id);
-        editEmail.setEnabled(false);  // 아이디는 변경 불가
+        editEmail.setEnabled(false); // 아이디 변경 불가
         editName.setText(name);
-//        editName.setEnabled(false); // 이름도 변경 불가 (지금은 반영 X)
         editWeight.setText(String.valueOf(weight));
 
-        // ▼ 수정 버튼 클릭 시
+        // ▼ 수정 버튼
         buttonUpdate.setOnClickListener(v -> {
             String newName = editName.getText().toString().trim();
             String newPassword = editPassword.getText().toString();
             String weightStr = editWeight.getText().toString().trim();
 
-            // ▼ 유효성 검사
             if (newName.isEmpty() || newPassword.isEmpty() || weightStr.isEmpty()) {
                 Toast.makeText(this, "비밀번호와 체중을 모두 입력하세요", Toast.LENGTH_SHORT).show();
                 return;
@@ -90,21 +115,19 @@ public class EditProfileActivity extends AppCompatActivity {
                 return;
             }
 
-            // ▼ 서버에 수정 요청 보내기
+            // 서버 업데이트
             EditProfileRequest request = new EditProfileRequest(id, newName, newPassword, newWeight);
             ApiService api = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
-            Call<CommonResponse> call = api.updateUser(request);
-            call.enqueue(new Callback<CommonResponse>() {
+            api.updateUser(request).enqueue(new Callback<CommonResponse>() {
                 @Override
                 public void onResponse(Call<CommonResponse> call, Response<CommonResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        // SharedPreferences에 변경된 내용 저장
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putString("name", newName);
-                        editor.putFloat("weight", newWeight);
-                        editor.apply();
-
+                        // 로컬 로그인 정보 갱신
+                        loginPref.edit()
+                                .putString("name", newName)
+                                .putFloat("weight", newWeight)
+                                .apply();
                         Toast.makeText(EditProfileActivity.this, "정보가 수정되었습니다!", Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
@@ -116,16 +139,23 @@ public class EditProfileActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call<CommonResponse> call, Throwable t) {
                     Toast.makeText(EditProfileActivity.this, "서버 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("EDIT_PROFILE", "에러: " + t.getMessage());
                 }
             });
         });
     }
 
-    private String formatSecondsToHMS(long seconds) {
-        long h = seconds / 3600;
-        long m = (seconds % 3600) / 60;
-        long s = seconds % 60;
-        return String.format("%02d:%02d:%02d", h, m, s);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 필요하면 돌아올 때도 run_stats에서 다시 읽어 갱신
+        SharedPreferences stats = statsPrefs();
+        long totalRunSecs = stats.getLong(scopedKey("total_run_time_seconds"), 0L);
+        double totalDistanceKm = Double.longBitsToDouble(
+                stats.getLong(scopedKey("total_distance_km"), Double.doubleToRawLongBits(0.0)));
+        int totalKcal = stats.getInt(scopedKey("total_kcal"), 0);
+
+        tvTotalRunTimeProfile.setText(formatSecondsToHMS(totalRunSecs));
+        tvTotalDistanceProfile.setText(String.format("%.2f km", totalDistanceKm));
+        tvTotalCaloriesProfile.setText(totalKcal + " kcal");
     }
 }

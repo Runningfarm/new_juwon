@@ -15,7 +15,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Tab6Activity extends AppCompatActivity {
+public class Tab6Activity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +51,19 @@ public class Tab6Activity extends AppCompatActivity {
     }
 
     private void setupUI() {
+
+        ImageButton tab1 = findViewById(R.id.tab1Button);
+        ImageButton tab2 = findViewById(R.id.tab2Button);
+        ImageButton tab3 = findViewById(R.id.tab3Button);
+        ImageButton tab4 = findViewById(R.id.tab4Button);
+        ImageButton tab6 = findViewById(R.id.tab6Button);
+
+        // BaseActivity에 등록
+        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
+
+        // 현재 탭(MainActivity = tab6)을 강조
+        updateBottomBarUI(R.id.tab6Button);
+
         // 하단 탭 버튼
         ImageButton tab1Button = findViewById(R.id.tab1Button);
         ImageButton tab2Button = findViewById(R.id.tab2Button);

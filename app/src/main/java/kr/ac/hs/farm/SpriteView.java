@@ -35,9 +35,38 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
     private SharedPreferences spritePrefs;
 
+    // ★★★ [ADD] 걷기 가능 그리드 관리용 필드들
+    private java.util.HashSet<Long> walkableCells; // (gx,gy) 압축 저장
+    private int walkGridSizePx = 64;               // MainActivity.GRID_PX와 동일하게
+
+    // (gx,gy) → long 키로 압축
+    private long keyOf(int gx, int gy) {
+        return (((long) gx) << 32) ^ (gy & 0xffffffffL);
+    }
+
+    // 주어진 월드 좌표(worldX, worldY)가 보행 가능 셀인지 검사
+    private boolean isWalkableWorld(float worldX, float worldY) {
+        if (walkableCells == null || walkableCells.isEmpty()) return true; // 비어있으면 전체 허용
+        int gx = (int)Math.floor(worldX / (float)walkGridSizePx);
+        int gy = (int)Math.floor(worldY / (float)walkGridSizePx);
+        return walkableCells.contains(keyOf(gx, gy));
+    }
+
     // 픽셀 스프라이트용 Paint (최근접 보간)
     private final android.graphics.Paint spritePaint = new android.graphics.Paint();
 
+    // SpriteView.java
+
+    // ① 캐릭터 표시 on/off
+    private boolean drawHero = true;
+    public void setDrawHero(boolean draw) { this.drawHero = draw; }
+
+    // ② 현재 프레임 정보 노출(오버레이가 읽어감)
+    public Bitmap getSpriteSheetBitmap() { return spriteSheet; }
+    public int getFrameRow() { return frameRow; }
+    public int getFrameIndex() { return frameIndex; }
+    public int getFrameWidthPx() { return frameWidth; }
+    public int getFrameHeightPx() { return frameHeight; }
 
     public interface OnSpriteClickListener {
         void onSpriteClick();
@@ -62,7 +91,6 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
     // SpriteView 클래스 하단부 어딘가에 public getter 2개 추가
     public float getCharacterWorldX() { return currentX; }
     public float getCharacterWorldY() { return currentY; }
-
 
     public SpriteView(Context context) {
         super(context);
@@ -197,8 +225,24 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
             float stepX = speed * dx / Math.max(1f, distance);
             float stepY = speed * dy / Math.max(1f, distance);
-            currentX += stepX;
-            currentY += stepY;
+
+            // ★★★ [REPLACE] 축 분리 슬라이딩 이동: 각 축별로 보행 가능할 때만 적용
+            float tryX = currentX + stepX;
+            float tryY = currentY + stepY;
+
+            // X축 먼저 시도
+            if (isWalkableWorld(tryX, currentY)) {
+                currentX = tryX;
+            } else {
+                // X가 막혔으면 X는 유지
+            }
+
+            // Y축 시도
+            if (isWalkableWorld(currentX, tryY)) {
+                currentY = tryY;
+            } else {
+                // Y가 막혔으면 Y는 유지
+            }
 
             currentX = Math.max(0, Math.min(backgroundImage.getWidth(), currentX));
             currentY = Math.max(0, Math.min(backgroundImage.getHeight(), currentY));
@@ -289,6 +333,26 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
 
             canvas.drawBitmap(spriteSheet, srcRect, dstRect, spritePaint);
         }
+
+        // drawFrame 끝부분의 캐릭터 그리기 블록
+        if (drawHero && spriteSheet != null && spriteSheet.getWidth() > 0 && spriteSheet.getHeight() > 0) {
+            int safeFrameW = Math.max(1, frameWidth);
+            int safeFrameH = Math.max(1, frameHeight);
+
+            srcRect.left = frameIndex * safeFrameW;
+            srcRect.top = frameRow * safeFrameH;
+            srcRect.right = Math.min(srcRect.left + safeFrameW, spriteSheet.getWidth());
+            srcRect.bottom = Math.min(srcRect.top + safeFrameH, spriteSheet.getHeight());
+
+            int size = safeFrameW * 6;
+            dstRect.left = (int) (centerX - size / 2f);
+            dstRect.top  = (int) (centerY - size / 2f);
+            dstRect.right = dstRect.left + size;
+            dstRect.bottom = dstRect.top + size;
+
+            canvas.drawBitmap(spriteSheet, srcRect, dstRect, spritePaint);
+        }
+
     }
 
     @Override
@@ -338,6 +402,10 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
             currentX = targetX = savedX;
             currentY = targetY = savedY;
         }
+        // ★ 선택사항: 시작 위치가 비보행이면 센터로 이동
+        if (!isWalkableWorld(currentX, currentY)) {
+            resetPositionToCenter();
+        }
     }
 
     public void resetPositionToCenter() {
@@ -372,6 +440,22 @@ public class SpriteView extends SurfaceView implements SurfaceHolder.Callback {
         SharedPreferences loginPrefs = getContext().getSharedPreferences("login", Context.MODE_PRIVATE);
         boolean isLoggedIn = loginPrefs.getBoolean("isLoggedIn", false);
         return isLoggedIn ? loginPrefs.getString("id", null) : null;
+    }
+
+    // ★★★ [ADD] MainActivity에서 바닥 그리드 전달
+    public void setWalkableGrid(java.util.Set<android.graphics.Point> cells, int gridSizePx) {
+        this.walkGridSizePx = Math.max(1, gridSizePx);
+        if (cells == null || cells.isEmpty()) {
+            // null/빈값이면 제약 해제(어디든 이동 가능)
+            this.walkableCells = null;
+            return;
+        }
+        if (this.walkableCells == null) this.walkableCells = new java.util.HashSet<>();
+        else this.walkableCells.clear();
+
+        for (android.graphics.Point p : cells) {
+            this.walkableCells.add(keyOf(p.x, p.y));
+        }
     }
 
     // SpriteView.java 안에 추가

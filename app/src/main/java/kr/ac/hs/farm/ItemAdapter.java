@@ -53,17 +53,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         int thumbRes = item.imageRes;
 
         // 울타리 툴(인벤토리 아이콘만 별도)
-        if ("울타리".equals(item.category) && "fence_tool".equals(item.name)) {
-            Integer icon = resolveDrawableId("fence_tool_icon", "fence", "fence_icon");
+        if ("fence".equals(item.name)) {
+            Integer icon = resolveDrawableId("fence", "fence_tool_icon", "fence_icon");
             if (icon != null) thumbRes = icon;
         }
 
         // 집 설치 툴(목장/집 공통) → house.png 로 보이게
         if ("house_wall_tool".equals(item.name)
                 && ("목장_구조물".equals(item.category) || "건축물".equals(item.category))) {
-            // 가장 먼저 "house" 를 찾고, 없을 때만 예비 이름들로 대체
             Integer icon = resolveDrawableId(
-                    "house",                // <-- 여기 파일만 두면 이게 바로 쓰여요
+                    "house",
                     "house_tool_icon",
                     "house_install_icon",
                     "house_wall_tool_icon",
@@ -73,6 +72,18 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         }
 
         holder.imageView.setImageResource(thumbRes);
+
+        // === 먹이만 64x64처럼 보이도록 패딩(8dp) 적용 ===
+        if ("먹이".equals(item.category)) {
+            int pad = dp(holder.imageView.getContext(), 8); // 80dp 셀에서 양쪽 8dp → 64dp 표시영역
+            holder.imageView.setPadding(pad, pad, pad, pad);
+            holder.imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        } else {
+            // 다른 아이템은 기존처럼 꽉 차게
+            holder.imageView.setPadding(0, 0, 0, 0);
+            holder.imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        }
+        // =============================================
 
         if (!item.obtained) {
             holder.imageView.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
@@ -108,19 +119,24 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                             prefs.edit().putInt(bgKey, item.imageRes).apply();
 
                             Toast.makeText(context, "배경이 변경되었습니다!", Toast.LENGTH_SHORT).show();
-                            context.startActivity(new Intent(context, MainActivity.class));
+                            Intent iBg = new Intent(context, MainActivity.class);
+                            iBg.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // ★ 추가
+                            context.startActivity(iBg);
 
-                        } else if ("울타리".equals(item.category) && "fence_tool".equals(item.name)) {
+                        } else if ("fence".equals(item.name)) {
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.putExtra("applyFenceTool", true);
-                            intent.putExtra("fenceAtlasResId", item.imageRes);
+                            intent.putExtra("fenceAtlasResId", item.imageRes); // ← 아틀라스(fences.png)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);   // ★ 추가
                             context.startActivity(intent);
+
 
                         } else if ("목장_구조물".equals(item.category) && "house_wall_tool".equals(item.name)) {
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.putExtra("applyHouseTool", true);
                             intent.putExtra("houseAtlasResId", item.imageRes);
                             intent.putExtra("toolOkText", "목장 설치 끝");
+                            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // ★ 추가
                             context.startActivity(intent);
 
                         } else if ("건축물".equals(item.category) && "house_wall_tool".equals(item.name)) {
@@ -128,12 +144,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                             intent.putExtra("applyHouseTool", true);
                             intent.putExtra("houseAtlasResId", item.imageRes);
                             intent.putExtra("toolOkText", "집 벽 설치 끝");
+                            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // ★ 추가
                             context.startActivity(intent);
 
                         } else {
                             Toast.makeText(context, "적용되었습니다!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.putExtra("appliedItemImageRes", item.imageRes);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // ★ 추가
                             context.startActivity(intent);
                         }
                     })
@@ -151,6 +169,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
             if (id != 0) return id;
         }
         return null;
+    }
+
+    private static int dp(Context ctx, int value) {
+        float d = ctx.getResources().getDisplayMetrics().density;
+        return Math.round(value * d);
     }
 
     @Override

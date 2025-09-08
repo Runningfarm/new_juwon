@@ -18,7 +18,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MypageActivity extends AppCompatActivity {
+public class MypageActivity extends BaseActivity {
 
     private TextView textWelcome;
     private LinearLayout buttonEditProfile, buttonLogout, buttonWithdraw, buttonExitApp;
@@ -29,6 +29,20 @@ public class MypageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mypage);
+
+        // 하단바 버튼 참조
+        ImageButton tab1 = findViewById(R.id.tab1Button);
+        ImageButton tab2 = findViewById(R.id.tab2Button);
+        ImageButton tab3 = findViewById(R.id.tab3Button);
+        ImageButton tab4 = findViewById(R.id.tab4Button);
+        ImageButton tab6 = findViewById(R.id.tab6Button);
+
+        // BaseActivity에 등록
+        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
+
+        // 현재 탭(마이페이지 = tab6) 강조
+        updateBottomBarUI(R.id.tab6Button);
+
 
         // 애니메이션 로딩
         scaleAnim = AnimationUtils.loadAnimation(this, R.anim.scale_on_click);
@@ -74,17 +88,6 @@ public class MypageActivity extends AppCompatActivity {
         setTabButton(R.id.tab3Button, Tab3Activity.class);
         setTabButton(R.id.tab4Button, Tab4Activity.class);
         setTabButton(R.id.tab6Button, MypageActivity.class);  // 현재 페이지
-    }
-
-    private void setTabButton(int buttonId, Class<?> targetActivity) {
-        ImageButton button = findViewById(buttonId);
-        button.setOnClickListener(v -> {
-            v.startAnimation(bounceAnim);
-            if (!this.getClass().equals(targetActivity)) {
-                startActivity(new Intent(this, targetActivity));
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            }
-        });
     }
 
     private void showLogoutDialog() {

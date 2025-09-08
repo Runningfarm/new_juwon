@@ -38,8 +38,10 @@ import retrofit2.Response;
 import android.widget.Toast;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 
-public class Tab3Activity extends AppCompatActivity {
+
+public class Tab3Activity extends BaseActivity {
 
     private ProgressBar[] progressBars = new ProgressBar[23];
     private Button[] claimButtons = new Button[23];
@@ -153,6 +155,19 @@ public class Tab3Activity extends AppCompatActivity {
                 claimQuest(index + 1);
             });
         }
+
+        ImageButton tab1 = findViewById(R.id.tab1Button);
+        ImageButton tab2 = findViewById(R.id.tab2Button);
+        ImageButton tab3 = findViewById(R.id.tab3Button);
+        ImageButton tab4 = findViewById(R.id.tab4Button);
+        ImageButton tab6 = findViewById(R.id.tab6Button);
+
+        // BaseActivity에 등록
+        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
+
+        // 현재 탭(MainActivity = tab3)을 강조
+        updateBottomBarUI(R.id.tab3Button);
+
 
         findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(this, Tab2Activity.class)));

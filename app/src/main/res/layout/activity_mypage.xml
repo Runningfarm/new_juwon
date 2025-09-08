@@ -202,8 +202,8 @@
             android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab1Button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_home"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
@@ -219,8 +219,8 @@
             android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab2Button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_running"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
@@ -236,8 +236,8 @@
             android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab3Button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_quest"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
@@ -253,8 +253,8 @@
             android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab4Button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_inventory"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"
@@ -270,8 +270,8 @@
             android:orientation="vertical">
             <ImageButton
                 android:id="@+id/tab6Button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@drawable/ic_mypage"
                 android:background="@drawable/bottom_tab_selector"
                 android:scaleType="centerInside"

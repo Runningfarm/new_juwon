@@ -46,8 +46,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallback {
-
+public class Tab2Activity extends BaseActivity implements OnMapReadyCallback {
     private ImageButton playButton, pauseButton, endButton;
     private TextView timeTextView, tvDistance, tvKcal, tvPace;
     private boolean isRunning = false;
@@ -65,6 +64,14 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
     private double totalDistance = 0.0;
     private Location lastLocation = null;
     private float weight = 0f;
+    private SharedPreferences statsPrefs() {
+        return getSharedPreferences("run_stats", MODE_PRIVATE);
+    }
+    private String scopedKey(String base) {
+        SharedPreferences login = getSharedPreferences("login", MODE_PRIVATE);
+        String uid = login.getString("id", null);
+        return base + "_" + (uid != null && !uid.trim().isEmpty() ? uid : "guest");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,19 +144,39 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
                         pauseRunning();
                         stopRunning();
 
-                        long prev = pref.getLong("total_run_time_seconds", 0L);
-                        long add = elapsedTime / 1000L;   // 이번 러닝 소요 시간(초)
-                        pref.edit().putLong("total_run_time_seconds", prev + add).apply();
+                        SharedPreferences stats = statsPrefs();
 
-                        Log.d("러닝", "time=" + timeTextView.getText().toString());
-                        Log.d("러닝", "distance=" + tvDistance.getText().toString());
-                        Log.d("러닝", "kcal=" + tvKcal.getText().toString());
-                        Log.d("러닝", "pace=" + tvPace.getText().toString());
+                        // 시간 누적
+                        long prevSecs = stats.getLong(scopedKey("total_run_time_seconds"), 0L);
+                        long addSecs  = elapsedTime / 1000L;
+                        long newSecs  = prevSecs + addSecs;
 
-                        // Tab3로 이번 러닝 거리 전달
+                        // 거리 누적 (double→longBits)
+                        long prevDistBits = stats.getLong(scopedKey("total_distance_km"),
+                                Double.doubleToRawLongBits(0.0));
+                        double prevDistKm = Double.longBitsToDouble(prevDistBits);
+                        double newDistKm  = prevDistKm + totalDistance;
+
+                        // 칼로리 누적
+                        SharedPreferences login = getSharedPreferences("login", MODE_PRIVATE);
+                        float weight = login.getFloat("weight", 0f);
+                        long seconds = elapsedTime / 1000;
+                        double hours = seconds / 3600.0;
+                        double pace  = hours > 0 ? (totalDistance / hours) : 0.0;
+                        double MET   = getMetsByPace(pace);
+                        int addKcal  = (int) Math.round(MET * weight * hours);
+                        int prevKcal = stats.getInt(scopedKey("total_kcal"), 0);
+                        int newKcal  = prevKcal + addKcal;
+
+                        stats.edit()
+                                .putLong(scopedKey("total_run_time_seconds"), newSecs)
+                                .putLong(scopedKey("total_distance_km"), Double.doubleToRawLongBits(newDistKm))
+                                .putInt (scopedKey("total_kcal"), newKcal)
+                                .apply();
+
+                        // 이후 기존 동작
                         Intent intent = new Intent(Tab2Activity.this, Tab3Activity.class);
-                        double distanceKm = totalDistance; // totalDistance는 km 단위
-                        intent.putExtra("lastRunDistance", distanceKm);
+                        intent.putExtra("lastRunDistance", totalDistance);
                         startActivity(intent);
 
                         sendRunResultToServer();
@@ -158,6 +185,18 @@ public class Tab2Activity extends AppCompatActivity implements OnMapReadyCallbac
                     .setCancelable(false)
                     .show();
         });
+
+        ImageButton tab1 = findViewById(R.id.tab1Button);
+        ImageButton tab2 = findViewById(R.id.tab2Button);
+        ImageButton tab3 = findViewById(R.id.tab3Button);
+        ImageButton tab4 = findViewById(R.id.tab4Button);
+        ImageButton tab6 = findViewById(R.id.tab6Button);
+
+        // BaseActivity에 등록
+        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
+
+        // 현재 탭(MainActivity = tab2)을 강조
+        updateBottomBarUI(R.id.tab2Button);
 
         findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, MainActivity.class)));
         findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, Tab2Activity.class)));

@@ -1,0 +1,22 @@
+<!-- res/drawable/tab_glow_yellow.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 살짝 아래쪽으로 붙여 보이게 inset 설정 -->
+    <item
+        android:bottom="0dp"
+        android:top="8dp"
+        android:left="8dp"
+        android:right="8dp"
+        android:gravity="bottom|center_horizontal">
+
+        <shape android:shape="oval">
+            <!-- 가로로 퍼진 타원 글로우 -->
+            <size android:width="60dp" android:height="30dp" />
+            <!-- 중심은 진하고 가장자리는 투명해지는 라디얼 그라디언트 -->
+            <gradient
+                android:type="radial"
+                android:gradientRadius="25dp"
+                android:startColor="#FFD600"
+            android:endColor="#00FFD600" />
+        </shape>
+    </item>
+</layer-list>
