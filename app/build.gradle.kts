@@ -42,6 +42,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    // ML Kit 이미지 라벨링
+    implementation("com.google.mlkit:image-labeling:17.0.9")
 
     // 네트워킹
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

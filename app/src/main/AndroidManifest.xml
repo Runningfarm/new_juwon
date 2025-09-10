@@ -48,6 +48,7 @@
         <!-- 누락되었던 액티비티 추가 -->
         <activity android:name=".MypageActivity" android:exported="true" />
         <activity android:name=".EditProfileActivity" android:exported="true" />
+        <activity android:name=".PhotoPreviewActivity" android:exported="true" />
 
         <!-- 카메라 사진 저장을 위한 FileProvider 설정 -->
         <provider

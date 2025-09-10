@@ -73,7 +73,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/coin"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <!-- 텍스트 + 바 -->
@@ -153,7 +153,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/coin"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -230,7 +230,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/coin"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -306,7 +306,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -318,7 +318,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="오전 러닝 퀘스트"
+                                    android:text="오전(06:00) 러닝 완료"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -383,7 +383,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -395,7 +395,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="오후 러닝 퀘스트"
+                                    android:text="오후(12:00) 러닝 완료"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -460,7 +460,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -472,7 +472,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="야간 러닝 퀘스트"
+                                    android:text="야간(22:00) 러닝 완료"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -537,7 +537,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -549,7 +549,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="100 칼로리 소모 퀘스트"
+                                    android:text="100kcal 소모 완료"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -614,7 +614,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -626,7 +626,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="200 칼로리 소모 퀘스트"
+                                    android:text="200kcal 소모 완료"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -691,7 +691,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -703,7 +703,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="400 칼로리 소모 퀘스트"
+                                    android:text="400kcal 소모 완료"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -767,7 +767,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -779,7 +779,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="5km 40분안에 완료 퀘스트"
+                                    android:text="5km 40분 안에 달리기"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -844,7 +844,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -856,7 +856,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="10km 80분안에 완료 퀘스트"
+                                    android:text="10km 80분 안에 달리기"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -921,7 +921,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -933,7 +933,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="5km 30분안에 완료 퀘스트"
+                                    android:text="5km 30분 안에 달리기"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -997,7 +997,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1009,7 +1009,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="10km 60분안에 완료 퀘스트"
+                                    android:text="10km 60분 안에 달리기"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1074,7 +1074,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1086,7 +1086,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 10시간 완료 퀘스트"
+                                    android:text="누적 10시간 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1151,7 +1151,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1163,7 +1163,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 30시간 완료 퀘스트"
+                                    android:text="누적 30시간 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1228,7 +1228,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1240,7 +1240,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 50시간 완료 퀘스트"
+                                    android:text="누적 50시간 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1305,7 +1305,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1317,7 +1317,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 100시간 완료 퀘스트"
+                                    android:text="누적 100시간 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1381,7 +1381,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1393,7 +1393,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 100km 완료 퀘스트"
+                                    android:text="누적 100km 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1457,7 +1457,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1469,7 +1469,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 500km 완료 퀘스트"
+                                    android:text="누적 500km 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1533,7 +1533,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1545,7 +1545,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 1000km 완료 퀘스트"
+                                    android:text="누적 1000km 러닝"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1609,7 +1609,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1621,7 +1621,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 10,000kcal 완료 퀘스트"
+                                    android:text="누적 10,000kcal 소모"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1685,7 +1685,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1697,7 +1697,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 50,000kcal 완료 퀘스트"
+                                    android:text="누적 50,000kcal 소모"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1761,7 +1761,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/trophy"
+                                android:src="@drawable/ic_plant"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1773,7 +1773,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="누적 100,000kcal 완료 퀘스트"
+                                    android:text="누적 100,000kcal 소모"
                                     android:textColor="#5D7755"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -1902,13 +1902,12 @@
 
                         <!-- 버튼 -->
                         <Button
-                            android:id="@+id/btnClaimP1"
+                            android:id="@+id/btnQuestP1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
                             android:backgroundTint="#FFF7D1"
                             android:elevation="2dp"
-                            android:enabled="false"
                             android:text="사진찍기"
                             android:textColor="#5D7755"
                             android:textStyle="bold" />
@@ -1984,13 +1983,12 @@
 
                         <!-- 버튼 -->
                         <Button
-                            android:id="@+id/btnClaimP2"
+                            android:id="@+id/btnQuestP2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
                             android:backgroundTint="#FFF7D1"
                             android:elevation="2dp"
-                            android:enabled="false"
                             android:text="사진찍기"
                             android:textColor="#5D7755"
                             android:textStyle="bold" />

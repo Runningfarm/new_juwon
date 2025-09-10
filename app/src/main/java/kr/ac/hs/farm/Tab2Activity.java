@@ -47,6 +47,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class Tab2Activity extends BaseActivity implements OnMapReadyCallback {
+
+    private static final int QUEST_TOTAL = 25; // 전체 퀘스트 수 9/5 기준(23개 + 카메라 2개(cameraQuestCount 검색해서 카메라 부분 퀘스트 늘어나면 숫자 올리기))
     private ImageButton playButton, pauseButton, endButton;
     private TextView timeTextView, tvDistance, tvKcal, tvPace;
     private boolean isRunning = false;
@@ -281,13 +283,35 @@ public class Tab2Activity extends BaseActivity implements OnMapReadyCallback {
                 if (response.isSuccessful() && response.body() != null) {
                     List<QuestProgressResponse.Quest> quests = response.body().getQuests();
                     if (quests != null) {
-                        int completed = 0;
-                        int total = quests.size();
+                        // 1) 서버가 내려준 진행도 집계
+                        int serverCompleted = 0;
+                        int serverTotal = quests.size();
                         for (QuestProgressResponse.Quest q : quests) {
-                            if (q.isCompleted()) completed++;
+                            if (q.isCompleted()) serverCompleted++;
                         }
+
+                        // 2) 전체 목표(25개) 중 서버에 "빠진 개수"만 로컬 카메라로 보충
+                        final int expectedTotal = QUEST_TOTAL;       // 25
+                        int missingCamera = Math.max(0, expectedTotal - serverTotal);
+
+                        // 3) 빠진 개수만큼만 로컬 카메라 완료 수 더하기 (P1, P2… 순서 가정)
+                        SharedPreferences qp = getSharedPreferences("quest_progress", MODE_PRIVATE);
+                        int cameraCompleted = 0;
+                        for (int i = 1; i <= missingCamera; i++) {
+                            if (qp.getBoolean("quest_p" + i + "_done", false)) {
+                                cameraCompleted++;
+                            }
+                        }
+
+                        // 4) 최종 합산 (total은 25에 맞추고, completed는 서버+로컬보충)
+                        int total = serverTotal + missingCamera;          // == 25가 됨
+                        int completed = serverCompleted + cameraCompleted;
+
+                        // 5) 표시 (안전하게 퍼센트 계산)
                         ProgressBar questBar = findViewById(R.id.quest_progress_bar);
-                        questBar.setProgress((int) (100.0 * completed / total));
+                        int percent = (total > 0) ? (int) Math.round(100.0 * completed / total) : 0;
+                        questBar.setProgress(percent);
+
                         TextView progressText = findViewById(R.id.quest_progress_text);
                         progressText.setText(completed + " / " + total + " 완료");
                     }

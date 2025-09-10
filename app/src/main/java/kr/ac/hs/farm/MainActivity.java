@@ -293,8 +293,8 @@ public class MainActivity extends BaseActivity {
         farmArea = findViewById(R.id.farmArea);
         resetButton = findViewById(R.id.resetButton);
 
-        loadData();
         migrateUserScopedProgressOnce(); // 선택
+        loadData();
         applyLevelUnlocksIfNeeded(false);
         characterButton.setVisibility(View.GONE);
 
@@ -568,29 +568,32 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadData() {
-        foodCount  = prefs.getInt(scopedKey(KEY_FOOD_COUNT), 3);
-        level      = prefs.getInt(scopedKey(KEY_LEVEL), 1);
-        experience = prefs.getInt(scopedKey(KEY_EXPERIENCE), 0);
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE).getBoolean("isLoggedIn", false);
 
-        // 로그인 안 한 사용자라면 무조건 LV0으로 고정
-        if (getCurrentUserId() == null) {
-            level = 0;
-            experience = 0; // 경험치도 초기화
-            // 원하면 foodCount도 기본값으로 맞춰줄 수 있음
-            foodCount = 0;
-        }
+        int defaultFood = isLoggedIn ? 3 : 0;
+        int defaultLevel = isLoggedIn ? 1 : 0;
+        int defaultExp   = 0;
+
+        foodCount  = prefs.getInt(scopedKey(KEY_FOOD_COUNT), defaultFood);
+        level      = prefs.getInt(scopedKey(KEY_LEVEL),      defaultLevel);
+        experience = prefs.getInt(scopedKey(KEY_EXPERIENCE), defaultExp);
     }
 
+
     private void migrateUserScopedProgressOnce() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE).getBoolean("isLoggedIn", false);
+        int defaultFood = isLoggedIn ? 3 : 0;
+
         String lvKeyOld = KEY_LEVEL, lvKeyNew = scopedKey(KEY_LEVEL);
         if (!prefs.contains(lvKeyNew) && prefs.contains(lvKeyOld)) {
             SharedPreferences.Editor ed = prefs.edit();
-            ed.putInt(lvKeyNew, prefs.getInt(lvKeyOld, 1));
-            ed.putInt(scopedKey(KEY_FOOD_COUNT), prefs.getInt(KEY_FOOD_COUNT, 3));
-            ed.putInt(scopedKey(KEY_EXPERIENCE), prefs.getInt(KEY_EXPERIENCE, 0));
+            ed.putInt(lvKeyNew, prefs.getInt(lvKeyOld, isLoggedIn ? 1 : 0));
+            ed.putInt(scopedKey(KEY_FOOD_COUNT),   prefs.getInt(KEY_FOOD_COUNT,   defaultFood));
+            ed.putInt(scopedKey(KEY_EXPERIENCE),   prefs.getInt(KEY_EXPERIENCE,   0));
             ed.remove(lvKeyOld).remove(KEY_FOOD_COUNT).remove(KEY_EXPERIENCE).apply();
         }
     }
+
 
     // ===== 저장 복원 =====
     private void restoreAppliedItems() {
@@ -1124,8 +1127,9 @@ public class MainActivity extends BaseActivity {
     // ===== Fence 설치 모드 =====
     private void enterFenceMode(int atlasResId) {
         exitFenceMode();
-        if (fenceOverlay != null) exitFenceMode();
-        fenceAtlas = new FenceAtlas(this, atlasResId);
+        if (fenceOverlay != null) {
+            fenceAtlas = new FenceAtlas(this, atlasResId);
+        }
 
         fenceOverlay = new FencePlacerOverlay(this, GRID_PX, masks -> commitFences(masks, atlasResId));
         fenceOverlay.setLayoutParams(new FrameLayout.LayoutParams(
@@ -2430,7 +2434,9 @@ public class MainActivity extends BaseActivity {
             View child = farmArea.getChildAt(i);
             if (!(child instanceof SelectableFenceView)) continue;
             SelectableFenceView fv = (SelectableFenceView) child;
-            if (fv.getAtlasResId() != atlasResId) continue;
+
+            // atlasResId < 0 이면 전체 해제, 아니면 해당 atlas만
+            if (atlasResId >= 0 && fv.getAtlasResId() != atlasResId) continue;
 
             if (Boolean.TRUE.equals(child.getTag(TAG_TMP_DELETE_MODE))) {
                 child.setOnClickListener(null);

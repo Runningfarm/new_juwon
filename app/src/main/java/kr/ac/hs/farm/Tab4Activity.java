@@ -87,6 +87,30 @@ public class Tab4Activity extends BaseActivity {
         if (migrated) ed.apply();
     }
 
+    // Tab4Activity.java 상단 헬퍼 추가
+    private int currentFoodCount() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE)
+                .getBoolean("isLoggedIn", false);
+        int def = isLoggedIn ? 3 : 0;
+        return prefs.getInt(scopedKey(KEY_FOOD_COUNT), def);
+    }
+
+    // (선택) onCreate에서 해금 마이그레이션처럼 먹이도 1회 마이그레이션
+    private void migrateUserScopedFoodOnce() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE)
+                .getBoolean("isLoggedIn", false);
+        int def = isLoggedIn ? 3 : 0;
+
+        String oldK = KEY_FOOD_COUNT;
+        String newK = scopedKey(KEY_FOOD_COUNT);
+        if (!prefs.contains(newK) && prefs.contains(oldK)) {
+            prefs.edit()
+                    .putInt(newK, prefs.getInt(oldK, def))
+                    .remove(oldK)
+                    .apply();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +118,7 @@ public class Tab4Activity extends BaseActivity {
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         migrateUserScopedUnlocksOnce();
+        migrateUserScopedFoodOnce(); // ← 추가
 
         ImageButton tab1 = findViewById(R.id.tab1Button);
         ImageButton tab2 = findViewById(R.id.tab2Button);
@@ -347,7 +372,7 @@ public class Tab4Activity extends BaseActivity {
         } else if (category.equals("먹이")) {
             int feedImageRes = getResources().getIdentifier("feed_item", "drawable", getPackageName());
             if (feedImageRes == 0) feedImageRes = R.drawable.feed_item;
-            int count = prefs.getInt(KEY_FOOD_COUNT, 3);
+            int count = currentFoodCount();            // ← 변경
             itemList.add(new Item("먹이 아이템", "먹이", count, feedImageRes, true));
 
         } else if (category.equals("동물")) {

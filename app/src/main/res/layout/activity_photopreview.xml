@@ -1,25 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_photo_preview"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
 
+    <!-- 사진 미리보기: 위(상단 안전영역)~보상버튼 사이를 꽉 채움 -->
     <ImageView
         android:id="@+id/previewImageView"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scaleType="fitCenter"
-        android:contentDescription="사진 미리보기" />
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:contentDescription="사진 미리보기"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnClaimReward"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- 보상 버튼: 탭바 위에 고정 -->
     <Button
         android:id="@+id/btnClaimReward"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="보상 받기"
         android:enabled="false"
         android:backgroundTint="#FFF7D1"
         android:textColor="#5D7755"
-        android:textStyle="bold"/>
-</LinearLayout>
+        android:textStyle="bold"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar"
+        app:layout_goneMarginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- 하단 탭바: 시스템 네비바에 가리지 않도록 인셋으로 paddingBottom 주입 예정 -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:padding="6dp"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 탭 버튼 1 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab1Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_home"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="홈"
+                android:elevation="2dp" />
+        </LinearLayout>
+
+        <!-- 탭 버튼 2 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab2Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_running"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="러닝"
+                android:elevation="2dp" />
+        </LinearLayout>
+
+        <!-- 탭 버튼 3 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab3Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_quest"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="퀘스트"
+                android:elevation="2dp" />
+        </LinearLayout>
+
+        <!-- 탭 버튼 4 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab4Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_inventory"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="인벤토리"
+                android:elevation="2dp" />
+        </LinearLayout>
+
+        <!-- 탭 버튼 5 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/tab6Button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_mypage"
+                android:background="@drawable/bottom_tab_selector"
+                android:scaleType="centerInside"
+                android:contentDescription="마이페이지"
+                android:elevation="2dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
