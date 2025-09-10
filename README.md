@@ -450,5 +450,5 @@ int count = prefs.getInt(KEY_FOOD_COUNT, 3);
 
 ```
 int count = currentFoodCount();
-``
+```
 로 변경
