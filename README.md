@@ -6,6 +6,8 @@
 
 <기존 수정 파일>
 ```
+index.js
+User.js
 activity_edit_profile.xml
 activity_photopreview.xml
 activity_tab3.xml
