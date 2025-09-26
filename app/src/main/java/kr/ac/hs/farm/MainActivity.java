@@ -245,7 +245,45 @@ public class MainActivity extends BaseActivity {
             if (v instanceof HeroOverlayView) { hero = v; break; }
         }
         if (hero != null) hero.bringToFront();
+
+        // [NEW] 영웅 오버레이와 함께 상단 고정 버튼도 항상 최상단으로
+        bringPrimaryControlsToFront();
     }
+
+    // 버튼 "자식"뿐 아니라, 버튼을 담고 있는 "최상위 형제 컨테이너"까지 올려준다.
+    private void bringPrimaryControlsToFront() {
+        View edit = findViewById(R.id.editModeButton);
+        View done = findViewById(R.id.editCompleteButton);
+        View reset = findViewById(R.id.resetButton);
+
+        // 1) 버튼 개별 z 올리기(같은 부모 내에서)
+        for (View v : new View[]{edit, done, reset}) {
+            if (v == null) continue;
+            v.bringToFront();
+            v.setTranslationZ(10000f);
+            v.setElevation(dp(24));
+        }
+
+        // 2) 버튼들이 들어있는 "컨테이너(부모 체인 최상단)"도 sibling 레벨에서 올리기
+        View any = (edit != null) ? edit : (done != null ? done : reset);
+        if (any != null) {
+            View topContainer = (View) any.getParent();
+            // 부모 사슬을 타고 올라가서, farmArea와 같은 부모의 "직계 자식"이 되는 지점까지 상승
+            while (topContainer != null && topContainer.getParent() instanceof View
+                    && topContainer.getParent() != findViewById(android.R.id.content)) {
+                topContainer = (View) topContainer.getParent();
+            }
+            if (topContainer != null) {
+                topContainer.bringToFront();
+                topContainer.setTranslationZ(10000f);
+                topContainer.setElevation(dp(32));
+                topContainer.invalidate();
+                View parent = (View) topContainer.getParent();
+                if (parent != null) parent.requestLayout();
+            }
+        }
+    }
+
 
     // ──[ 레벨 해금 로직 상수 ]──────────────────────────────────────────────
     private static final String KEY_UNLOCK_COUNT = "unlockCount"; // 지금까지 해금된 단계 수(0~10)
@@ -415,6 +453,14 @@ public class MainActivity extends BaseActivity {
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
         farmArea.addView(heroLayer, farmArea.getChildCount()); // 항상 최상단
+
+        // farmArea 자체 z/elevation을 낮춰두면 형제 컨테이너(버튼 그룹)가 쉽게 위로 올라감
+        farmArea.setTranslationZ(0f);
+        farmArea.setElevation(0f);
+
+        // 초기 진입/모드 전환마다 버튼 컨테이너까지 끌어올리기
+        bringPrimaryControlsToFront();
+
     }
 
     // 한 번만 키 이관(이미 타깃 키가 있으면 스킵)

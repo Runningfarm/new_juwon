@@ -289,7 +289,7 @@ public class Tab4Activity extends BaseActivity {
         setChipLockVisual(chipRanchFurniture,isUnlocked("ranch_furniture"));
         setChipLockVisual(chipRanchStructure,isUnlocked("ranch_struct"));
 
-        // 배경 탭 라벨에 잠금 뱃지 느낌(선택은 리스너에서 가드)
+        // 배경 탭 라벨
         TabLayout.Tab bgTab = tabLayout.getTabAt(2); // 농장(0), 목장(1), 배경(2), 먹이(3)
         if (bgTab != null) {
             if (!isUnlocked("backgrounds")) bgTab.setText("배경");
@@ -367,13 +367,14 @@ public class Tab4Activity extends BaseActivity {
             itemList.add(new Item("fence", "구조물", 0, fencesResId, true));
 
         } else if (category.equals("배경")) {
-            for (String n : new String[]{"tiles_grass","tiles_soil","tiles_stone"}) addIfExistsAs("배경", n, "배경");
+            // name을 리소스 엔트리명으로 넣어야 라벨 매핑 가능
+            for (String n : new String[]{"tiles_grass","tiles_soil","tiles_stone"}) addIfExistsAs(n, n, "배경");
 
         } else if (category.equals("먹이")) {
             int feedImageRes = getResources().getIdentifier("feed_item", "drawable", getPackageName());
             if (feedImageRes == 0) feedImageRes = R.drawable.feed_item;
-            int count = currentFoodCount();            // ← 변경
-            itemList.add(new Item("먹이 아이템", "먹이", count, feedImageRes, true));
+            int count = currentFoodCount();
+            itemList.add(new Item("feed_item", "먹이", count, feedImageRes, true));
 
         } else if (category.equals("동물")) {
             for (String n : new String[]{"chicken","cow"}) addIfExists(n, "동물");
@@ -410,9 +411,11 @@ public class Tab4Activity extends BaseActivity {
         int resId = getResources().getIdentifier(entryName, "drawable", getPackageName());
         if (resId != 0) itemList.add(new Item(entryName, category, 0, resId, true));
     }
+
+    // ⚠️ 여기서 name을 리소스 엔트리명(entry)으로 넣도록 변경
     private void addIfExistsAs(String name, String entry, String category) {
         int resId = getResources().getIdentifier(entry, "drawable", getPackageName());
-        if (resId != 0) itemList.add(new Item(name, category, 0, resId, true));
+        if (resId != 0) itemList.add(new Item(entry, category, 0, resId, true));
     }
 
     @Override protected void onResume() {

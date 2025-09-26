@@ -73,7 +73,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_distance"
                                 android:contentDescription="보상 이미지" />
 
                             <!-- 텍스트 + 바 -->
@@ -98,6 +98,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest1"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -107,13 +108,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward1"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward1"
+                                            android:layout_width="30dp"
+                                            android:layout_height="24dp"
+                                            android:contentDescription="보상 상자"
+                                            android:src="@drawable/box_locked" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText1"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x1"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -153,7 +174,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_distance"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -171,11 +192,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest2"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -185,13 +208,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward2"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward2"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x3"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -230,7 +273,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_distance"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -248,11 +291,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest3"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -262,13 +307,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward3"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward3"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText3"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x5"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -306,7 +371,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_afternoon"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -324,11 +389,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest4"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -338,13 +405,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward4"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward4"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText4"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x3"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -383,7 +470,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_morning"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -401,11 +488,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest5"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -415,13 +504,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward5"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward5"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText5"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x2"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -460,7 +569,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_night"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -478,11 +587,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest6"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -492,13 +603,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward6"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward6"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText6"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x3"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -537,7 +668,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_kcal"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -555,11 +686,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest7"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -569,13 +702,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward7"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward7"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText7"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x1"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -614,7 +767,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_kcal"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -632,11 +785,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest8"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -646,13 +801,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward8"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward8"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText8"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x2"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -691,7 +866,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_kcal"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -709,11 +884,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest9"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -723,13 +900,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward9"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward9"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText9"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x4"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -767,7 +964,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_timer"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -785,11 +982,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest10"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -799,13 +998,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward10"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward10"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText10"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x7"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -844,7 +1063,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_timer"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -862,11 +1081,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest11"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -876,13 +1097,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward11"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward11"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText11"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x8"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -921,7 +1162,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_timer"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -939,11 +1180,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest12"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -953,13 +1196,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward12"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward12"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText12"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x10"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -997,7 +1260,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_timer"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1015,11 +1278,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest13"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1029,13 +1294,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward13"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward13"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText13"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x15"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1074,7 +1359,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_time"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1092,11 +1377,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest14"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1106,13 +1393,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward14"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward14"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText14"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x5"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1151,7 +1458,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_time"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1169,11 +1476,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest15"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1183,13 +1492,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward15"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward15"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText15"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x10"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1228,7 +1557,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_time"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1246,11 +1575,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest16"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1260,13 +1591,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward16"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward16"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText16"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x15"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1305,7 +1656,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_time"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1323,11 +1674,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest17"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1337,13 +1690,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward17"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward17"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText17"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x25"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1381,7 +1754,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_distance"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1399,11 +1772,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest18"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1413,13 +1788,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward18"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward18"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText18"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x15"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1457,7 +1852,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_distance"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1475,11 +1870,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest19"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1489,13 +1886,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward19"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward19"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText19"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x30"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1533,7 +1950,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_distance"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1551,11 +1968,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest20"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1565,13 +1984,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward20"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward20"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText20"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x50"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1609,7 +2048,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_kcal"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1627,11 +2066,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest21"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1641,13 +2082,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward21"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward21"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText21"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x20"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1685,7 +2146,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_kcal"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1703,11 +2164,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest22"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1717,13 +2180,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward22"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward22"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText22"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x40"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1761,7 +2244,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_plant"
+                                android:src="@drawable/ic_total_kcal"
                                 android:contentDescription="보상 이미지" />
 
                             <LinearLayout
@@ -1779,11 +2262,13 @@
                                     android:textStyle="bold"
                                     android:fontFamily="@font/gowundodum_regular" />
 
+                                <!-- 진행바 + 상자 -->
                                 <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="8dp">
 
+                                    <!-- 진행바 -->
                                     <ProgressBar
                                         android:id="@+id/progressQuest23"
                                         style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
@@ -1793,13 +2278,33 @@
                                         android:progress="0"
                                         android:progressDrawable="@drawable/progress_green_custom" />
 
-                                    <ImageView
-                                        android:id="@+id/boxReward23"
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
+                                    <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:gravity="center_vertical"
                                         android:layout_gravity="end|center_vertical"
-                                        android:src="@drawable/box_locked"
-                                        android:contentDescription="보상 상자" />
+                                        android:layout_marginEnd="0dp">
+
+                                        <ImageView
+                                            android:id="@+id/boxReward23"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:src="@drawable/box_locked"
+                                            android:contentDescription="보상 상자" />
+
+                                        <TextView
+                                            android:id="@+id/rewardText23"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="x70"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold"
+                                            android:textColor="#009688"
+                                            android:fontFamily="@font/nanumgothic_regular"/>
+                                    </LinearLayout>
                                 </FrameLayout>
                             </LinearLayout>
 
@@ -1858,7 +2363,7 @@
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
                             android:contentDescription="보상 이미지"
-                            android:src="@android:drawable/ic_menu_camera" />
+                            android:src="@drawable/ic_picture" />
 
                         <!-- 텍스트 + 진행바 -->
                         <LinearLayout
@@ -1890,13 +2395,35 @@
                                     android:progress="0"
                                     android:progressDrawable="@drawable/progress_green_custom" />
 
-                                <ImageView
-                                    android:id="@+id/boxRewardP1"
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
+                                <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
                                     android:layout_gravity="end|center_vertical"
-                                    android:contentDescription="보상 상자"
-                                    android:src="@drawable/box_locked" />
+                                    android:baselineAligned="false">
+
+                                    <ImageView
+                                        android:id="@+id/boxRewardP1"
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/box_locked"
+                                        android:contentDescription="보상 상자" />
+
+                                    <TextView
+                                        android:id="@+id/rewardTextP1"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="24dp"
+                                        android:layout_marginStart="4dp"
+                                        android:gravity="center"
+                                        android:includeFontPadding="false"
+                                        android:text="x3"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:textColor="#009688"
+                                        android:fontFamily="@font/nanumgothic_regular"/>
+                                </LinearLayout>
                             </FrameLayout>
                         </LinearLayout>
 
@@ -1939,7 +2466,7 @@
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
                             android:contentDescription="보상 이미지"
-                            android:src="@android:drawable/ic_menu_camera" />
+                            android:src="@drawable/ic_picture" />
 
                         <!-- 텍스트 + 진행바 -->
                         <LinearLayout
@@ -1971,13 +2498,35 @@
                                     android:progress="0"
                                     android:progressDrawable="@drawable/progress_green_custom" />
 
-                                <ImageView
-                                    android:id="@+id/boxRewardP2"
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
+                                <!-- 보상 상자 + 개수 텍스트 묶음 -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
                                     android:layout_gravity="end|center_vertical"
-                                    android:contentDescription="보상 상자"
-                                    android:src="@drawable/box_locked" />
+                                    android:baselineAligned="false">
+
+                                    <ImageView
+                                        android:id="@+id/boxRewardP2"
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/box_locked"
+                                        android:contentDescription="보상 상자" />
+
+                                    <TextView
+                                        android:id="@+id/rewardTextP2"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="24dp"
+                                        android:layout_marginStart="4dp"
+                                        android:gravity="center"
+                                        android:includeFontPadding="false"
+                                        android:text="x5"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:textColor="#009688"
+                                        android:fontFamily="@font/nanumgothic_regular"/>
+                                </LinearLayout>
                             </FrameLayout>
                         </LinearLayout>
 
