@@ -1,334 +1,456 @@
 >>> 이전 수정 사항 관련 내용은 모두 juwonkim 레포 참고해주세요.
 
-## <9/8 수정사항>
+## <9/10 수정사항>
 
-1. 하단바 수정
-2. 사용자 레벨별 아이템 해금 흐름 로직 추가
-3. 집 커스텀 삭제 및 인벤토리 아이템 수정
-4. 메인 화면에 닭, 소 바로 추가되게끔 설정
-5. 사용자별 누적 거리, 시간, 칼로리 저장
-6. 사용자별 레벨 저장
+앱 실행 시에 발생하는 각종 오류 수정
 
 <기존 수정 파일>
 ```
-activity_main.xml
-activity_mypage.xml
-activity_tab2.xml
+index.js
+User.js
+activity_edit_profile.xml
+activity_photopreview.xml
 activity_tab3.xml
-activity_tab4.xml
-activity_tab6.xml
-AndroidManifest.xml
-```
-
-```
-EditProfileActivity.java
-ItemAdapter.java
 MainActivity.java
-MypageAcitivty.java
-SpriteView.java
 Tab2Activity.java
-Tab3Activity.java
 Tab4Activity.java
-Tab6Activity.java
 ```
-
-<새로운 파일>
-```
-BaseActivity.java
-HeroOverlayView.java
-tab_click.xml
-tab_glow_yellow.xml
-```
-
-```
-feed_item.npg
-ic_home.png
-ic_inventory.png
-ic_mypage.png
-ic_quest.png
-ic_running.png
-```
--> 기존에 있던 png들을 지우고 새로운 png들을 다운받아서 drawable에 넣어주세요
-
 
 ## 수정 내용
->>> 겹치는 파일 없으신 분들은 복붙해도 상관 없습니다.
+>>> 지금까지의 내용 최종 합본이라 전체 복붙하셔서 사용하시면 됩니다.
 
->>> 수정 파일이 매우 많아서 다른 분들 레포의 수정 사항과 겹치지 않는 파일은 내용 적지 않았습니다. 안 되는 부분은 > 9/8 수정 사항 < 클릭해서 Commit diff 참고해주세요.
+>>> 안 되는 부분은 > 9/10 수정 사항 < 클릭해서 Commit diff 참고해주세요.
 
-1. AndroidManifest.xml
+1. activity_edit_profile.xml
+```
+android:layout_marginTop="80dp"
+```
+를
 
 ```
-<!-- 시작 액티비티 -->
-        <activity
-            android:name=".MainActivity"
+android:layout_marginTop="30dp"
 ```
-바로 아래에
+로 교체
 
-```
-android:launchMode="singleTop"
-```
-추가
+2. activity_photopreview.xml
 
+→ 전체 파일 교체
 
-2. activity_tab3.xml
-
-맨 아래에 '하단 탭바' 부분을 아래 코드로 통째로 교체
-```
-<!-- 하단 탭바 -->
-    <LinearLayout
-        android:id="@+id/bottomBar"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:background="#FFFFFF"
-        android:elevation="8dp"
-        android:layout_margin="8dp"
-        android:padding="6dp"
-        android:backgroundTint="#FFFFFF"
-        android:backgroundTintMode="src_in"
-        android:clipToPadding="false"
-        android:gravity="center">
-
-        <!-- 탭 버튼들 (생략 없이 5개 모두 구성) -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-            <ImageButton
-                android:id="@+id/tab1Button"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/ic_home"
-                android:background="@drawable/bottom_tab_selector"
-                android:scaleType="centerInside"
-                android:contentDescription="홈"
-                android:elevation="2dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-            <ImageButton
-                android:id="@+id/tab2Button"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/ic_running"
-                android:background="@drawable/bottom_tab_selector"
-                android:scaleType="centerInside"
-                android:contentDescription="러닝"
-                android:elevation="2dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-            <ImageButton
-                android:id="@+id/tab3Button"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/ic_quest"
-                android:background="@drawable/bottom_tab_selector"
-                android:scaleType="centerInside"
-                android:contentDescription="퀘스트"
-                android:elevation="2dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-            <ImageButton
-                android:id="@+id/tab4Button"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/ic_inventory"
-                android:background="@drawable/bottom_tab_selector"
-                android:scaleType="centerInside"
-                android:contentDescription="인벤토리"
-                android:elevation="2dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-            <ImageButton
-                android:id="@+id/tab6Button"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/ic_mypage"
-                android:background="@drawable/bottom_tab_selector"
-                android:scaleType="centerInside"
-                android:contentDescription="마이페이지"
-                android:elevation="2dp" />
-        </LinearLayout>
-    </LinearLayout>
-```
-
-3. Tab2Activity.java
+3. activity_tab3.xml
 
 (1)
+총 25개의 퀘스트 모두
 ```
-private float weight = 0f;
+android:src="@drawable/coin"
+android:src="@drawable/trophy"
 ```
-바로 밑에
+이 퀘스트 아이콘 이미지 drawable 파일을
 
 ```
-private SharedPreferences statsPrefs() {
-        return getSharedPreferences("run_stats", MODE_PRIVATE);
-    }
-    private String scopedKey(String base) {
-        SharedPreferences login = getSharedPreferences("login", MODE_PRIVATE);
-        String uid = login.getString("id", null);
-        return base + "_" + (uid != null && !uid.trim().isEmpty() ? uid : "guest");
-    }
+android:src="@drawable/ic_plant"
 ```
-추가
+로 교체
 
 (2)
 ```
-.setPositiveButton("예", (dialog, which) -> {
-                        pauseRunning();
-                        stopRunning();
-
-                        long prev = pref.getLong("total_run_time_seconds", 0L);
-                        long add = elapsedTime / 1000L;   // 이번 러닝 소요 시간(초)
-                        pref.edit().putLong("total_run_time_seconds", prev + add).apply();
-
-                        Log.d("러닝", "time=" + timeTextView.getText().toString());
-                        Log.d("러닝", "distance=" + tvDistance.getText().toString());
-                        Log.d("러닝", "kcal=" + tvKcal.getText().toString());
-                        Log.d("러닝", "pace=" + tvPace.getText().toString());
-
-                        // Tab3로 이번 러닝 거리 전달
-                        Intent intent = new Intent(Tab2Activity.this, Tab3Activity.class);
-                        double distanceKm = totalDistance; // totalDistance는 km 단위
-                        intent.putExtra("lastRunDistance", distanceKm);
-                        startActivity(intent);
-
-                        sendRunResultToServer();
-                    })
+android:text="오전 러닝 퀘스트"
 ```
-이 부분을 아래로 통째로 교체
+를
 
 ```
-.setPositiveButton("예", (dialog, which) -> {
-                        pauseRunning();
-                        stopRunning();
-
-                        SharedPreferences stats = statsPrefs();
-
-                        // 시간 누적
-                        long prevSecs = stats.getLong(scopedKey("total_run_time_seconds"), 0L);
-                        long addSecs  = elapsedTime / 1000L;
-                        long newSecs  = prevSecs + addSecs;
-
-                        // 거리 누적 (double→longBits)
-                        long prevDistBits = stats.getLong(scopedKey("total_distance_km"),
-                                Double.doubleToRawLongBits(0.0));
-                        double prevDistKm = Double.longBitsToDouble(prevDistBits);
-                        double newDistKm  = prevDistKm + totalDistance;
-
-                        // 칼로리 누적
-                        SharedPreferences login = getSharedPreferences("login", MODE_PRIVATE);
-                        float weight = login.getFloat("weight", 0f);
-                        long seconds = elapsedTime / 1000;
-                        double hours = seconds / 3600.0;
-                        double pace  = hours > 0 ? (totalDistance / hours) : 0.0;
-                        double MET   = getMetsByPace(pace);
-                        int addKcal  = (int) Math.round(MET * weight * hours);
-                        int prevKcal = stats.getInt(scopedKey("total_kcal"), 0);
-                        int newKcal  = prevKcal + addKcal;
-
-                        stats.edit()
-                                .putLong(scopedKey("total_run_time_seconds"), newSecs)
-                                .putLong(scopedKey("total_distance_km"), Double.doubleToRawLongBits(newDistKm))
-                                .putInt (scopedKey("total_kcal"), newKcal)
-                                .apply();
-
-                        // 이후 기존 동작
-                        Intent intent = new Intent(Tab2Activity.this, Tab3Activity.class);
-                        intent.putExtra("lastRunDistance", totalDistance);
-                        startActivity(intent);
-
-                        sendRunResultToServer();
-                    })
+android:text="오전(06:00) 러닝
 ```
+로 교체
 
 (3)
 ```
-findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, MainActivity.class)));
-        findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, Tab2Activity.class)));
-        findViewById(R.id.tab3Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, Tab3Activity.class)));
-        findViewById(R.id.tab4Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, Tab4Activity.class)));
-        findViewById(R.id.tab6Button).setOnClickListener(view -> startActivity(new Intent(Tab2Activity.this, Tab6Activity.class)));
+android:text="오후 러닝 퀘스트"
 ```
-바로 위에
+를
 
 ```
-ImageButton tab1 = findViewById(R.id.tab1Button);
-        ImageButton tab2 = findViewById(R.id.tab2Button);
-        ImageButton tab3 = findViewById(R.id.tab3Button);
-        ImageButton tab4 = findViewById(R.id.tab4Button);
-        ImageButton tab6 = findViewById(R.id.tab6Button);
-
-        // BaseActivity에 등록
-        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
-
-        // 현재 탭(MainActivity = tab2)을 강조
-        updateBottomBarUI(R.id.tab2Button);
+android:text="오후(12:00) 러닝
 ```
-추가
+로 교체
+
+(4)
+```
+android:text="야간 러닝 퀘스트"
+```
+를
+
+```
+android:text="야간(22:00) 러닝
+```
+로 교체
+
+(5)
+```
+android:text="100 칼로리 소모 퀘스트"
+
+```
+를
+
+```
+android:text="100kcal 소모 완료"
+```
+로 교체
+
+(6)
+```
+android:text="200 칼로리 소모 퀘스트"
+```
+를
+
+```
+android:text="200kcal 소모 완료"
+```
+로 교체
+
+(7)
+```
+android:text="400 칼로리 소모 퀘스트"
+```
+를 
+
+```
+android:text="400kcal 소모 완료"
+```
+로 교체
+
+(8)
+```
+android:text="5km 40분안에 완료 퀘스트"
+```
+를
+
+```
+android:text="5km 40분 안에 달리기"
+```
+로 교체
+
+(9)
+```
+android:text="10km 80분안에 완료 퀘스트"
+```
+를
+
+```
+android:text="10km 80분 안에 달리기"
+```
+로 교체
+
+(10)
+```
+android:text="5km 30분안에 완료 퀘스트"
+```
+를
+
+```
+android:text="5km 30분 안에 달리기"
+```
+로 교체
+
+(11)
+```
+android:text="10km 60분안에 완료 퀘스트"
+```
+를
+
+```
+android:text="10km 60분 안에 달리기"
+```
+로 교체
+
+(12)
+```
+android:text="누적 10시간 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 10시간 러닝"
+```
+로 교체
+
+(13)
+```
+android:text="누적 30시간 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 30시간 러닝"
+```
+로 교체
+
+(14)
+```
+android:text="누적 50시간 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 50시간 러닝"
+```
+로 교체
 
 
-4. Tab3Activity.java
+(15)
+```
+android:text="누적 100시간 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 100시간 러닝"
+```
+로 교체
+
+(16)
+```
+android:text="누적 100km 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 100km 러닝"
+```
+로 교체
+
+(17)
+```
+android:text="누적 500km 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 500km 러닝"
+```
+로 교체
+
+(18)
+```
+android:text="누적 1000km 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 1000km 러닝"
+```
+로 교체
+
+(19)
+```
+android:text="누적 10,000kcal 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 10,000kcal 소모"
+```
+로 교체
+
+(20)
+```
+android:text="누적 50,000kcal 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 50,000kcal 소모"
+```
+로 교체
+
+(21)
+```
+android:text="누적 100,000kcal 완료 퀘스트"
+```
+를
+
+```
+android:text="누적 100,000kcal 소모"
+```
+로 교체
+
+4. MainActivity.java
 
 (1)
 ```
-import android.view.View;
+resetButton = findViewById(R.id.resetButton);
 ```
-아래에
+이거랑
 
 ```
-import android.widget.ImageButton;
+loadData();
 ```
-추가
+이거 사이에
+
+```
+migrateUserScopedProgressOnce(); // 선택
+```
+이거 넣기
 
 (2)
-```
-findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(this, MainActivity.class)));
-        findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(this, Tab2Activity.class)));
-        findViewById(R.id.tab3Button).setOnClickListener(view -> startActivity(new Intent(this, Tab3Activity.class)));
-        findViewById(R.id.tab4Button).setOnClickListener(view -> startActivity(new Intent(this, Tab4Activity.class)));
-        findViewById(R.id.tab6Button).setOnClickListener(view -> startActivity(new Intent(this, Tab6Activity.class)));
-```
-바로 위에
+
+private void loadData() 이 함수 전체 아래로 교체
 
 ```
-ImageButton tab1 = findViewById(R.id.tab1Button);
-        ImageButton tab2 = findViewById(R.id.tab2Button);
-        ImageButton tab3 = findViewById(R.id.tab3Button);
-        ImageButton tab4 = findViewById(R.id.tab4Button);
-        ImageButton tab6 = findViewById(R.id.tab6Button);
+private void loadData() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE).getBoolean("isLoggedIn", false);
 
-        // BaseActivity에 등록
-        initBottomTabs(java.util.Arrays.asList(tab1, tab2, tab3, tab4, tab6));
+        int defaultFood = isLoggedIn ? 3 : 0;
+        int defaultLevel = isLoggedIn ? 1 : 0;
+        int defaultExp   = 0;
 
-        // 현재 탭(MainActivity = tab3)을 강조
-        updateBottomBarUI(R.id.tab3Button);
+        foodCount  = prefs.getInt(scopedKey(KEY_FOOD_COUNT), defaultFood);
+        level      = prefs.getInt(scopedKey(KEY_LEVEL),      defaultLevel);
+        experience = prefs.getInt(scopedKey(KEY_EXPERIENCE), defaultExp);
+    }
+```
+
+(3)
+
+private void migrateUserScopedProgressOnce() 이 함수 전체 아래로 교체
+
+```
+private void migrateUserScopedProgressOnce() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE).getBoolean("isLoggedIn", false);
+        int defaultFood = isLoggedIn ? 3 : 0;
+
+        String lvKeyOld = KEY_LEVEL, lvKeyNew = scopedKey(KEY_LEVEL);
+        if (!prefs.contains(lvKeyNew) && prefs.contains(lvKeyOld)) {
+            SharedPreferences.Editor ed = prefs.edit();
+            ed.putInt(lvKeyNew, prefs.getInt(lvKeyOld, isLoggedIn ? 1 : 0));
+            ed.putInt(scopedKey(KEY_FOOD_COUNT),   prefs.getInt(KEY_FOOD_COUNT,   defaultFood));
+            ed.putInt(scopedKey(KEY_EXPERIENCE),   prefs.getInt(KEY_EXPERIENCE,   0));
+            ed.remove(lvKeyOld).remove(KEY_FOOD_COUNT).remove(KEY_EXPERIENCE).apply();
+        }
+    }
+```
+
+(4)
+```
+if (fenceOverlay != null) exitFenceMode();
+        fenceAtlas = new FenceAtlas(this, atlasResId);
+```
+를
+
+```
+if (fenceOverlay != null) {
+            fenceAtlas = new FenceAtlas(this, atlasResId);
+        }
+```
+로 교체
+
+(5)
+```
+if (fv.getAtlasResId() != atlasResId) continue;
+```
+를
+
+```
+// atlasResId < 0 이면 전체 해제, 아니면 해당 atlas만
+            if (atlasResId >= 0 && fv.getAtlasResId() != atlasResId) continue;
+```
+로 교체
+
+5. Tab2Activity.java
+
+```
+if (quests != null) {
+```
+밑에 부분을
+
+```
+// 1) 서버가 내려준 진행도 집계
+                        int serverCompleted = 0;
+                        int serverTotal = quests.size();
+                        for (QuestProgressResponse.Quest q : quests) {
+                            if (q.isCompleted()) serverCompleted++;
+                        }
+
+                        // 2) 전체 목표(25개) 중 서버에 "빠진 개수"만 로컬 카메라로 보충
+                        final int expectedTotal = QUEST_TOTAL;       // 25
+                        int missingCamera = Math.max(0, expectedTotal - serverTotal);
+
+                        // 3) 빠진 개수만큼만 로컬 카메라 완료 수 더하기 (P1, P2… 순서 가정)
+                        SharedPreferences qp = getSharedPreferences("quest_progress", MODE_PRIVATE);
+                        int cameraCompleted = 0;
+                        for (int i = 1; i <= missingCamera; i++) {
+                            if (qp.getBoolean("quest_p" + i + "_done", false)) {
+                                cameraCompleted++;
+                            }
+                        }
+
+                        // 4) 최종 합산 (total은 25에 맞추고, completed는 서버+로컬보충)
+                        int total = serverTotal + missingCamera;          // == 25가 됨
+                        int completed = serverCompleted + cameraCompleted;
+
+                        // 5) 표시 (안전하게 퍼센트 계산)
+                        ProgressBar questBar = findViewById(R.id.quest_progress_bar);
+                        int percent = (total > 0) ? (int) Math.round(100.0 * completed / total) : 0;
+                        questBar.setProgress(percent);
+
+                        TextView progressText = findViewById(R.id.quest_progress_text);
+                        progressText.setText(completed + " / " + total + " 완료");
+```
+로 교체
+
+
+6. Tab4Activity.java
+
+(1)
+protected void onCreate(Bundle savedInstanceState) 시작 전에
+
+```
+// Tab4Activity.java 상단 헬퍼 추가
+    private int currentFoodCount() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE)
+                .getBoolean("isLoggedIn", false);
+        int def = isLoggedIn ? 3 : 0;
+        return prefs.getInt(scopedKey(KEY_FOOD_COUNT), def);
+    }
+
+    // (선택) onCreate에서 해금 마이그레이션처럼 먹이도 1회 마이그레이션
+    private void migrateUserScopedFoodOnce() {
+        boolean isLoggedIn = getSharedPreferences("login", MODE_PRIVATE)
+                .getBoolean("isLoggedIn", false);
+        int def = isLoggedIn ? 3 : 0;
+
+        String oldK = KEY_FOOD_COUNT;
+        String newK = scopedKey(KEY_FOOD_COUNT);
+        if (!prefs.contains(newK) && prefs.contains(oldK)) {
+            prefs.edit()
+                    .putInt(newK, prefs.getInt(oldK, def))
+                    .remove(oldK)
+                    .apply();
+        }
+    }
+```
+를 추가
+
+(2)
+
+```
+prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        migrateUserScopedUnlocksOnce();
+```
+밑에
+
+```
+migrateUserScopedFoodOnce();
 ```
 추가
+
+(3)
+```
+int count = prefs.getInt(KEY_FOOD_COUNT, 3);
+```
+를
+
+
+```
+int count = currentFoodCount();
+```
+로 변경
